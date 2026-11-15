@@ -951,8 +951,9 @@ export default function App() {
     let cancelled = false;
     let backgroundTimer = null;
     const product = PRODUCT_DEFS.find(item => item.id === selectedProductId) || PRODUCT_DEFS[0];
+    importedDatasetActiveRef.current = false;
     setDataStatus("loading");
-    if (!importedDatasetActiveRef.current) setDataset([]);
+    setDataset([]);
     const primaryIds = geographicScope.level === "national" ? ["master"] : ["farmgate-household", "retail"];
     const primaryDefinitions = SOURCE_DEFS.filter(definition => primaryIds.includes(definition.id));
     Promise.all(primaryDefinitions.map(definition => loadBundledSource(definition, product, geographicScope))).then(primaryLoaded => {

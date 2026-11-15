@@ -9,13 +9,14 @@ import {
   Upload, Plus, Trash2, RotateCcw, ChevronRight, Feather,
   CheckCircle2, Menu, X, Download, HelpCircle, Database,
   BarChart3, ArrowUpRight, ArrowDownRight, ArrowRight, Check,
-  Drumstick, Egg, Bird, Wheat, Store, Sun
+  Drumstick, Egg, Bird, Wheat, Store, Sun, Compass
 } from "lucide-react";
 import { runForecastEngine, MODEL_IDS } from "./utils/forecast.js";
 
 const STORAGE_KEY = "poultry:dataset:v2";
 const SETTINGS_KEY = "poultry:settings";
 const EVENTS_KEY = "poultry:external-events:v1";
+const TOUR_KEY = "manok-tour-done";
 const MASTER_DATA_URL = "/data/master_national_monthly.csv";
 const DEFAULT_GEOGRAPHIC_SCOPE = { level: "national", region: "", province: "" };
 const KNOWN_REGIONS = [
@@ -183,6 +184,40 @@ const STRINGS = {
     "model2.naive": "Repeat last price", "model2.linear": "Farm-link (linear)", "model2.arima": "Recent trend (ARIMA 2,1,0)", "model2.xgboost": "Boosted stumps (XGBoost-style)", "model2.randomForest": "Random forest",
     "an.hint": "A longer bar means the two move together more often.",
     "data.recent": "Recent months", "data.col.month": "Month", "data.more": "More tools: compare sources, charts, import your own data",
+    "tour.start": "Tour",
+    "tour.step": "Step {n} of {total}",
+    "tour.next": "Next",
+    "tour.back": "Back",
+    "tour.skip": "Skip tour",
+    "tour.finish": "Got it!",
+    "tour.cta.title": "Take the guided tour",
+    "tour.cta.body": "A one-minute walk through every page.",
+    "tour.s1.t": "Welcome to ManokMetrics",
+    "tour.s1.d": "This quick tour shows you where everything is. It takes about one minute, and you can leave any time.",
+    "tour.s2.t": "Choose a product and place",
+    "tour.s2.d": "Pick chicken, eggs or duck, and the whole Philippines, a region or a province. Every page updates to match.",
+    "tour.s3.t": "Home",
+    "tour.s3.d": "Your starting point: today's price and how it compares with last month.",
+    "tour.s4.t": "Today's price",
+    "tour.s4.d": "The latest market price, with the farm price and the price gap beside it. The gap is what shoppers pay on top of the farmer's price. It is not profit.",
+    "tour.s5.t": "Forecast",
+    "tour.s5.d": "Open this page to see our best guess for the coming months.",
+    "tour.s6.t": "Choose how far ahead",
+    "tour.s6.d": "Pick next month, 3 months, a year, or type your own number of months.",
+    "tour.s7.t": "Our best guess",
+    "tour.s7.d": "The expected price, how it compares with the last recorded price, and how big the price gap may be.",
+    "tour.s8.t": "How sure are we?",
+    "tour.s8.d": "We test the method on past months and show how far off it usually was. Guesses further ahead are less certain, so use this as a guide, not a promise.",
+    "tour.s9.t": "Why prices move",
+    "tour.s9.d": "See what tends to move together with prices, like farm price, production and bird numbers. Moving together does not mean one causes the other.",
+    "tour.s10.t": "Price records",
+    "tour.s10.d": "Browse the PSA records behind every page, compare sources, or add your own months.",
+    "tour.s11.t": "Help",
+    "tour.s11.d": "Plain-language meanings of terms like price gap and forecast, common questions, and a button to replay this tour.",
+    "tour.s12.t": "Switch language",
+    "tour.s12.d": "Change between English and Filipino any time.",
+    "tour.s13.t": "You are ready!",
+    "tour.s13.d": "Press the Tour button at the top any time to see this again. Happy exploring!",
   },
   fil: {
     "brand.sub": "Gabay sa presyo ng manok at itlog",
@@ -294,6 +329,40 @@ const STRINGS = {
     "model2.naive": "Ulitin ang huling presyo", "model2.linear": "Farm-link (linear)", "model2.arima": "Kamakailang galaw (ARIMA 2,1,0)", "model2.xgboost": "Boosted stumps (XGBoost-style)", "model2.randomForest": "Random forest",
     "an.hint": "Mas mahabang bar, mas madalas silang sabay gumalaw.",
     "data.recent": "Mga huling buwan", "data.col.month": "Buwan", "data.more": "Iba pang kasangkapan: ihambing ang mga source, mga tsart, mag-import ng sariling data",
+    "tour.start": "Gabay",
+    "tour.step": "Hakbang {n} sa {total}",
+    "tour.next": "Susunod",
+    "tour.back": "Bumalik",
+    "tour.skip": "Laktawan",
+    "tour.finish": "Sige!",
+    "tour.cta.title": "Sumama sa gabay",
+    "tour.cta.body": "Isang minutong lakad sa bawat pahina.",
+    "tour.s1.t": "Maligayang pagdating sa ManokMetrics",
+    "tour.s1.d": "Ipapakita ng maikling gabay na ito kung nasaan ang lahat. Mga isang minuto lang ito, at maaari kang huminto anumang oras.",
+    "tour.s2.t": "Pumili ng produkto at lugar",
+    "tour.s2.d": "Piliin ang manok, itlog o pato, at ang buong Pilipinas, isang rehiyon o isang lalawigan. Susunod ang lahat ng pahina.",
+    "tour.s3.t": "Home",
+    "tour.s3.d": "Dito ka magsisimula: ang presyo ngayon at kung paano ito kumpara sa nakaraang buwan.",
+    "tour.s4.t": "Presyo ngayon",
+    "tour.s4.d": "Ang pinakabagong presyo sa palengke, katabi ang presyo sa bukid at ang agwat. Ang agwat ay ang dagdag na binabayaran ng mamimili sa presyo ng magsasaka. Hindi ito tubo.",
+    "tour.s5.t": "Forecast",
+    "tour.s5.d": "Buksan ang pahinang ito para makita ang aming hula sa mga susunod na buwan.",
+    "tour.s6.t": "Piliin kung gaano kalayo",
+    "tour.s6.d": "Piliin ang susunod na buwan, 3 buwan, 1 taon, o mag-type ng sarili mong bilang ng buwan.",
+    "tour.s7.t": "Ang aming hula",
+    "tour.s7.d": "Ang inaasahang presyo, kung paano ito kumpara sa huling naitalang presyo, at kung gaano kalaki ang maaaring agwat.",
+    "tour.s8.t": "Gaano kami katiyak?",
+    "tour.s8.d": "Sinusubukan namin ang pamamaraan sa mga nakaraang buwan at ipinapakita kung gaano ito kadalas nagkamali. Mas malayo ang hula, mas hindi tiyak, kaya gabay lang ito at hindi pangako.",
+    "tour.s9.t": "Bakit gumagalaw ang presyo",
+    "tour.s9.d": "Tingnan kung anong mga bagay ang sabay gumagalaw sa presyo, tulad ng presyo sa bukid, produksyon at bilang ng manok. Ang sabay na paggalaw ay hindi nangangahulugang may sanhi.",
+    "tour.s10.t": "Mga tala ng presyo",
+    "tour.s10.d": "Tingnan ang mga tala ng PSA sa likod ng bawat pahina, ihambing ang mga source, o magdagdag ng sarili mong buwan.",
+    "tour.s11.t": "Tulong",
+    "tour.s11.d": "Mga simpleng paliwanag sa mga salita tulad ng agwat ng presyo at forecast, mga karaniwang tanong, at button para ulitin ang gabay na ito.",
+    "tour.s12.t": "Palitan ang wika",
+    "tour.s12.d": "Lumipat sa pagitan ng English at Filipino anumang oras.",
+    "tour.s13.t": "Handa ka na!",
+    "tour.s13.d": "Pindutin ang button na Gabay sa itaas anumang oras para makita ulit ito. Masayang mag-explore!",
   },
 };
 const LangContext = React.createContext("en");
@@ -826,7 +895,7 @@ function loadBundledSource(definition, product, geographicScope) {
 function loadAllBundledSources(product = PRODUCT_DEFS[0], geographicScope = DEFAULT_GEOGRAPHIC_SCOPE) {
   const scopeKey = [geographicScope.level, geographicScope.region, geographicScope.province].join("|");
   const cacheKey = `${product.id}|${scopeKey}`;
-  if (bundledSourceCache.has(cacheKey)) return bundledSourceCache.get(cacheKey);
+  if (bundledSourceCache.has(cacheKey)) return Promise.resolve(bundledSourceCache.get(cacheKey));
   if (bundledSourcePromises.has(cacheKey)) return bundledSourcePromises.get(cacheKey);
   const promise = Promise.all(SOURCE_DEFS.map(definition => loadBundledSource(definition, product, geographicScope))).then(loaded => {
     const result = Object.fromEntries(loaded.map(source => [source.id, source]));
@@ -897,6 +966,10 @@ export default function App() {
   const [events, setEvents] = usePersistentState(EVENTS_KEY, []);
   const [tab, setTab] = useState("dashboard");
   const [navOpen, setNavOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+  const tourAutoRef = useRef(false);
+  const startTour = () => { setTab("dashboard"); setNavOpen(false); setTourOpen(true); };
+  const endTour = () => { setTourOpen(false); setNavOpen(false); try { localStorage.setItem(TOUR_KEY, "1"); } catch (e) { /* ignore */ } };
   const [lang, setLang] = useState(() => { try { return localStorage.getItem("manok-lang") === "fil" ? "fil" : "en"; } catch (e) { return "en"; } });
   const chooseLang = (value) => { setLang(value); try { localStorage.setItem("manok-lang", value); } catch (e) { /* ignore */ } };
   const [dataStatus, setDataStatus] = useState("loading");
@@ -998,6 +1071,16 @@ export default function App() {
     if (!hasRetail) setActivePriceSourceId("farmgate-household");
   }, [sources, activePriceSourceId]);
 
+  // First visit: offer the guided tour once the data has loaded.
+  useEffect(() => {
+    if (dataStatus !== "ready" || tourAutoRef.current) return undefined;
+    let done = false;
+    try { done = localStorage.getItem(TOUR_KEY) === "1"; } catch (e) { /* ignore */ }
+    if (done) { tourAutoRef.current = true; return undefined; }
+    const id = setTimeout(() => { tourAutoRef.current = true; setTourOpen(true); }, 700);
+    return () => clearTimeout(id);
+  }, [dataStatus]);
+
   const rows = useMemo(() => {
     return dataset.map((d, i) => {
       const hasRetail = d.retail !== null && d.retail !== undefined && Number.isFinite(Number(d.retail));
@@ -1054,6 +1137,7 @@ export default function App() {
                 className={`navitem ${tab === item.id ? "active" : ""}`}
                 onClick={() => { setTab(item.id); setNavOpen(false); }}
                 aria-current={tab === item.id ? "page" : undefined}
+                data-tour={"nav-" + item.id}
               >
                 <item.icon size={19} />
                 <span>{item.label}</span>
@@ -1066,6 +1150,7 @@ export default function App() {
                 className={`navitem navitem-small ${tab === item.id ? "active" : ""}`}
                 onClick={() => { setTab(item.id); setNavOpen(false); }}
                 aria-current={tab === item.id ? "page" : undefined}
+                data-tour={"nav-" + item.id}
               >
                 <item.icon size={17} />
                 <span>{item.label}</span>
@@ -1073,7 +1158,7 @@ export default function App() {
             ))}
           </nav>
           <div className="sidebar-foot">
-            <div className="lang-toggle" role="group" aria-label="Language">
+            <div className="lang-toggle" role="group" aria-label="Language" data-tour="lang">
               <button type="button" className={lang === "en" ? "on" : ""} onClick={() => chooseLang("en")}>EN</button>
               <button type="button" className={lang === "fil" ? "on" : ""} onClick={() => chooseLang("fil")}>Filipino</button>
             </div>
@@ -1094,7 +1179,8 @@ export default function App() {
               setGeographicScope={setGeographicScope}
               availableGeographies={availableGeographies}
             />
-            <div className="lang-toggle lang-mobile" role="group" aria-label="Language">
+            <button type="button" className="tour-btn" onClick={startTour} aria-label={t("tour.start")}><Compass size={17} /><span>{t("tour.start")}</span></button>
+            <div className="lang-toggle lang-mobile" role="group" aria-label="Language" data-tour="lang">
               <button type="button" className={lang === "en" ? "on" : ""} onClick={() => chooseLang("en")}>EN</button>
               <button type="button" className={lang === "fil" ? "on" : ""} onClick={() => chooseLang("fil")}>Filipino</button>
             </div>
@@ -1108,12 +1194,13 @@ export default function App() {
                 {tab === "analysis" && <AnalysisTab rows={rows} productionRows={sources.production?.rows || []} inventoryRows={sources[activeInventorySourceId]?.rows || []} selectedProductId={selectedProductId} geographicScope={geographicScope} />}
                 {tab === "predict" && <PredictTab settings={settings} rows={rows} modelOutputs={modelOutputs} sources={sources} selectedProductId={selectedProductId} events={events} setEvents={setEvents} geographicScope={geographicScope} availableGeographies={availableGeographies} />}
                 {tab === "settings" && <SettingsTab settings={settings} setSettings={setSettings} rows={rows} />}
-                {tab === "faq" && <FaqTab />}
+                {tab === "faq" && <FaqTab onStartTour={startTour} />}
               </>
             )}
           </div>
         </main>
       </div>
+      {tourOpen && <GuidedTour onNavigate={(nextTab, openNav) => { if (nextTab) setTab(nextTab); setNavOpen(!!openNav); }} onClose={endTour} />}
     </div>
     </LangContext.Provider>
   );
@@ -1132,7 +1219,7 @@ function trustFromMape(mape) {
 function FilterBar({ selectedProductId, setSelectedProductId, geographicScope, setGeographicScope, availableGeographies }) {
   const t = useT();
   return (
-    <div className="filterbar">
+    <div className="filterbar" data-tour="filters">
       <label className="pill-select">
         <ProductBadge id={selectedProductId} />{t("filter.product")}
         <select value={selectedProductId} onChange={e => setSelectedProductId(e.target.value)}>
@@ -1321,7 +1408,7 @@ function Dashboard({ rows, stats, selectedProductId, geographicScope, settings, 
 
       {stats && last && (
         <>
-          <div className="hero-row">
+          <div className="hero-row" data-tour="home-price">
             <section className="card price-now">
               <span className="eyebrow">{t("home.now", { period: last.period })}</span>
               <h3>{hasRetail ? t("home.price", { product: productName, price: fmtPHP(last.retail), unit }) : t("home.priceFarm", { product: productName, price: fmtPHP(last.farmgate), unit })}</h3>
@@ -1877,14 +1964,14 @@ function PredictTab({ settings, rows, modelOutputs, sources, selectedProductId, 
 
       {hasForecast && (
         <>
-          <div className="forecast-period-controls">
+          <div className="forecast-period-controls" data-tour="fc-horizon">
             <div className="seg" role="group" aria-label={t("fc.s3")}>
               {horizons.map(([n, key]) => <button type="button" key={n} className={customPeriods === "" && periodsAhead === n ? "on" : ""} onClick={() => { setCustomPeriods(""); setPeriodsAhead(n); }}>{forecastDateLabel(lastRow, n, t.lang) || t(key)}</button>)}
             </div>
             <label className="forecast-period-input">{t("fc.custom")}<input type="number" min="1" max="120" step="1" value={customPeriods} onChange={applyCustomPeriods} placeholder="1–120" aria-label={t("fc.custom")} /></label>
           </div>
 
-          <section className="card hero-card hero-simple">
+          <section className="card hero-card hero-simple" data-tour="fc-result">
             <span className="hero-label">{t(forecastUsesFarmgate ? "hero.label.farm" : "hero.label", { when: whenText })}</span>
             <span className="hero-value">{predicted != null ? fmtPHP(predicted) : "\u2014"}</span>
             {predicted != null && <p className="hero-sentence">{t(forecastUsesFarmgate ? "hero.about.farm" : "hero.about", { price: fmtPHP(predicted), unit })}{!forecastUsesFarmgate && perPiece ? " " + t("hero.tray", { tray: fmtPHP(predicted * 30) }) : ""}</p>}
@@ -1898,7 +1985,7 @@ function PredictTab({ settings, rows, modelOutputs, sources, selectedProductId, 
           </section>
 
           {rec && naive && (
-            <section className="card reliability-simple">
+            <section className="card reliability-simple" data-tour="fc-reliability">
               <h3>{t("fc.rel2.title")}</h3>
               <p>{t("fc.rel2.body", { n: rec.validationCount, mae: fmtPHP(rec.mae), mape: rec.mape.toFixed(1), nmae: fmtPHP(naive.mae), nmape: naive.mape.toFixed(1) })}</p>
               <div className="rel-bars">
@@ -2093,7 +2180,136 @@ function SettingsTab({ settings, setSettings, setDataset, rows }) {
   );
 }
 
-function FaqTab() {
+/* ------------------------------ Guided tour ------------------------------- */
+
+const TOUR_STEPS = [
+  { id: "s1" },
+  { id: "s2", tab: "dashboard", target: '[data-tour="filters"]' },
+  { id: "s3", tab: "dashboard", target: '[data-tour="nav-dashboard"]', nav: true },
+  { id: "s4", tab: "dashboard", target: '[data-tour="home-price"]' },
+  { id: "s5", tab: "predict", target: '[data-tour="nav-predict"]', nav: true },
+  { id: "s6", tab: "predict", target: '[data-tour="fc-horizon"]' },
+  { id: "s7", tab: "predict", target: '[data-tour="fc-result"]' },
+  { id: "s8", tab: "predict", target: '[data-tour="fc-reliability"]' },
+  { id: "s9", target: '[data-tour="nav-analysis"]', nav: true },
+  { id: "s10", target: '[data-tour="nav-data"]', nav: true },
+  { id: "s11", target: '[data-tour="nav-faq"]', nav: true },
+  { id: "s12", target: '[data-tour="lang"]' },
+  { id: "s13", tab: "dashboard" },
+];
+
+function findTourTarget(selector) {
+  if (!selector) return null;
+  const nodes = document.querySelectorAll(selector);
+  for (let i = 0; i < nodes.length; i += 1) {
+    const r = nodes[i].getBoundingClientRect();
+    if (r.width > 4 && r.height > 4 && r.right > 0 && r.left < window.innerWidth) return nodes[i];
+  }
+  return null;
+}
+
+function GuidedTour({ onNavigate, onClose }) {
+  const t = useT();
+  const [index, setIndex] = useState(0);
+  const [rect, setRect] = useState(null);
+  const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight });
+  const step = TOUR_STEPS[index];
+  const total = TOUR_STEPS.length;
+  const isLast = index === total - 1;
+
+  // Go to the right page (and open the menu on phones) whenever the step changes.
+  useEffect(() => {
+    const mobile = window.innerWidth <= 960;
+    onNavigate(step.tab, mobile && !!step.nav);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index]);
+
+  // Find the highlighted element. The page may still be loading, so keep looking.
+  useEffect(() => {
+    let cancelled = false;
+    let scrolled = false;
+    setRect(null);
+    if (!step.target) return undefined;
+    const tick = () => {
+      if (cancelled) return;
+      const el = findTourTarget(step.target);
+      if (!el) { setRect(null); return; }
+      if (!scrolled) { scrolled = true; el.scrollIntoView({ block: "center", inline: "nearest" }); }
+      const r = el.getBoundingClientRect();
+      setRect(prev => (prev && Math.abs(prev.top - r.top) < 1 && Math.abs(prev.left - r.left) < 1 && Math.abs(prev.width - r.width) < 1 && Math.abs(prev.height - r.height) < 1)
+        ? prev : { top: r.top, left: r.left, width: r.width, height: r.height });
+    };
+    tick();
+    const id = setInterval(tick, 200);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [index, step.target]);
+
+  useEffect(() => {
+    const onResize = () => setSize({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  const next = () => { if (isLast) onClose(); else setIndex(i => Math.min(total - 1, i + 1)); };
+  const back = () => setIndex(i => Math.max(0, i - 1));
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowRight" || e.key === "Enter") { e.preventDefault(); next(); }
+      else if (e.key === "ArrowLeft") back();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  const pad = 8;
+  const CARD_W = Math.min(360, size.w - 24);
+  const CARD_H = 230;
+  const phone = size.w <= 560;
+  let cardStyle;
+  let spotStyle = null;
+  if (rect) {
+    spotStyle = { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 };
+    if (phone) {
+      const targetMid = rect.top + rect.height / 2;
+      cardStyle = targetMid > size.h / 2 ? { top: 12, left: 12, right: 12 } : { bottom: 12, left: 12, right: 12 };
+    } else {
+      const below = size.h - (rect.top + rect.height + pad);
+      const clampLeft = (v) => Math.max(12, Math.min(v, size.w - CARD_W - 12));
+      if (below >= CARD_H + 20) cardStyle = { top: rect.top + rect.height + pad + 14, left: clampLeft(rect.left), width: CARD_W };
+      else if (rect.top - pad >= CARD_H + 20) cardStyle = { top: rect.top - pad - 14 - CARD_H, left: clampLeft(rect.left), width: CARD_W };
+      else if (rect.left + rect.width + pad + CARD_W + 28 < size.w) cardStyle = { top: Math.max(12, Math.min(rect.top, size.h - CARD_H - 12)), left: rect.left + rect.width + pad + 16, width: CARD_W };
+      else cardStyle = { bottom: 16, left: clampLeft(rect.left), width: CARD_W };
+    }
+  } else {
+    cardStyle = phone ? { bottom: 12, left: 12, right: 12 } : { top: "50%", left: "50%", width: CARD_W, transform: "translate(-50%, -50%)" };
+  }
+
+  return (
+    <div className="tour-layer" role="dialog" aria-modal="true" aria-label={t("tour.s" + (index + 1) + ".t")}>
+      <div className="tour-block" />
+      {spotStyle ? <div className="tour-spot" style={spotStyle} /> : <div className="tour-dim" />}
+      <div className="tour-card" style={cardStyle}>
+        <div className="tour-card-top">
+          <span className="tour-count">{t("tour.step", { n: index + 1, total })}</span>
+          <button type="button" className="tour-x" onClick={onClose} aria-label={t("tour.skip")}><X size={16} /></button>
+        </div>
+        <h3>{t("tour." + step.id + ".t")}</h3>
+        <p>{t("tour." + step.id + ".d")}</p>
+        <div className="tour-dots" aria-hidden="true">{TOUR_STEPS.map((s, i) => <i key={s.id} className={i === index ? "on" : i < index ? "past" : ""} />)}</div>
+        <div className="tour-actions">
+          {!isLast && <button type="button" className="tour-skip" onClick={onClose}>{t("tour.skip")}</button>}
+          <span className="tour-spacer" />
+          {index > 0 && <button type="button" className="btn tour-back" onClick={back}>{t("tour.back")}</button>}
+          <button type="button" className="btn btn-primary" onClick={next} autoFocus>{isLast ? t("tour.finish") : t("tour.next")}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FaqTab({ onStartTour }) {
   const t = useT();
   const steps = [["help.s1.t", "help.s1.d"], ["help.s2.t", "help.s2.d"], ["help.s3.t", "help.s3.d"]];
   const glossary = [["term.farm", Wheat], ["term.market", Store], ["term.gap", ArrowUpRight], ["term.forecast", TrendingUp], ["term.link", BarChart3], ["term.miss", Check], ["term.psa", HelpCircle]];
@@ -2101,6 +2317,13 @@ function FaqTab() {
   return (
     <div className="page">
       <div className="page-title-row"><div><h2 className="page-title">{t("help.title")}</h2><p className="page-sub">{t("help.sub")}</p></div></div>
+      {onStartTour && (
+        <div className="tour-cta">
+          <span className="finding-icon"><Compass size={20} /></span>
+          <div><b>{t("tour.cta.title")}</b><p>{t("tour.cta.body")}</p></div>
+          <button type="button" className="btn btn-primary" onClick={onStartTour}>{t("tour.start")}</button>
+        </div>
+      )}
       <h3 className="section-label">{t("help.steps")}</h3>
       <div className="help-steps">
         {steps.map(([title, text], index) => (
@@ -2919,4 +3142,38 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 @media (max-width: 560px) {
   .kpis, .action-cards { grid-template-columns: 1fr; }
 }
+/* ---- Guided tour ---- */
+.tour-btn { display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px; border: none; border-radius: 999px; background: #fff; color: var(--c-ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 0 var(--c-line); }
+.tour-btn:hover { background: #FFF6E6; color: #8a5a10; }
+.tour-btn svg { color: var(--c-yolk); }
+.tour-cta { display: flex; align-items: center; gap: 14px; background: #FFF6E6; border: 1px solid #F3DDB4; border-radius: 18px; padding: 14px 18px; margin: 0 0 22px; }
+.tour-cta > div { flex: 1; min-width: 0; }
+.tour-cta b { display: block; font-size: 15px; }
+.tour-cta p { margin: 2px 0 0; font-size: 13px; color: var(--c-ink-soft); }
+.tour-layer { position: fixed; inset: 0; z-index: 200; }
+.tour-block { position: absolute; inset: 0; }
+.tour-dim { position: absolute; inset: 0; background: rgba(17,22,43,0.62); }
+.tour-spot { position: fixed; border-radius: 18px; box-shadow: 0 0 0 9999px rgba(17,22,43,0.62); outline: 3px solid var(--c-yolk); outline-offset: 0; pointer-events: none; transition: top .2s ease, left .2s ease, width .2s ease, height .2s ease; }
+.tour-card { position: fixed; background: #fff; color: var(--c-ink); border-radius: 20px; padding: 16px 18px 16px; box-shadow: 0 18px 50px rgba(17,22,43,0.35); }
+.tour-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.tour-count { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--c-teal); }
+.tour-x { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: none; border-radius: 50%; background: transparent; color: var(--c-ink-soft); cursor: pointer; }
+.tour-x:hover { background: var(--c-bg); }
+.tour-card h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 20px; margin: 2px 0 6px; }
+.tour-card p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--c-ink-soft); }
+.tour-dots { display: flex; gap: 5px; margin: 14px 0 12px; }
+.tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--c-line); }
+.tour-dots i.past { background: #BFD9D2; }
+.tour-dots i.on { width: 20px; border-radius: 99px; background: var(--c-teal); }
+.tour-actions { display: flex; align-items: center; gap: 8px; }
+.tour-spacer { flex: 1; }
+.tour-skip { border: none; background: transparent; color: var(--c-ink-soft); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; padding: 8px 4px; }
+.tour-skip:hover { color: var(--c-ink); text-decoration: underline; }
+.tour-back { background: var(--c-bg); color: var(--c-ink); }
+@media (max-width: 560px) {
+  .tour-btn span { display: none; }
+  .tour-btn { width: 40px; padding: 0; justify-content: center; }
+  .tour-cta { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) { .tour-spot { transition: none; } }
 `;

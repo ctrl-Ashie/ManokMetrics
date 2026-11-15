@@ -50,6 +50,18 @@ const PRODUCT_LOOK = {
   "layer-chicken": { icon: Drumstick, fil: "Manok na pangitlog (layer)" },
   "native-improved": { icon: Feather, fil: "Native/improved na manok" },
 };
+function forecastRowsForProduct(rows, product) {
+  const validRows = rows.filter(row => Number.isFinite(Number(row.farmgate)));
+  if (product.retailField) {
+    return validRows.filter(row => Number.isFinite(Number(row.retail)));
+  }
+  return validRows.map(row => ({ ...row, retail: Number(row.farmgate) }));
+}
+function farmgateForecastRows(rows) {
+  return rows
+    .filter(row => Number.isFinite(Number(row.farmgate)))
+    .map(row => ({ ...row, retail: Number(row.farmgate) }));
+}
 function productLabel(product, lang) {
   const look = PRODUCT_LOOK[product.id];
   return lang === "fil" && look ? look.fil : product.name;
@@ -64,7 +76,7 @@ const STRINGS = {
   en: {
     "brand.sub": "Chicken & egg price guide",
     "nav.home": "Home", "nav.forecast": "Forecast", "nav.analysis": "Why prices move", "nav.data": "Price records", "nav.settings": "Advanced settings", "nav.help": "Help",
-    "status.ready": "Data ready", "status.loading": "Loading", "status.needs": "Needs data",
+    "status.ready": "Data ready", "status.loading": "Loading", "status.needs": "Needs data", "loading.title": "Getting the price records ready", "loading.body": "The little chick is checking the latest farm and market prices.",
     "foot.psa": "Data from PSA OpenSTAT",
     "scope.national": "Whole Philippines", "scope.chooseRegion": "Choose a region", "scope.chooseProvince": "Choose a province",
     "filter.product": "Product", "filter.where": "Where", "filter.region": "Region", "filter.province": "Province",
@@ -95,14 +107,14 @@ const STRINGS = {
     "act.help": "Help", "act.help.d": "Simple steps and a word list",
     "dash.terms": "What do these words mean?",
     "fc.title": "Forecast", "fc.sub": "{product} \u00B7 {scope}. A guide for planning, not a promise of the market price.",
-    "fc.noRetail": "This product has farm prices but no market price records, so we cannot guess its market price.",
+    "fc.noRetail": "This product has no usable price records for forecasting.",
     "fc.setup": "Set up your guess", "fc.s1": "Which farm price should we start from?",
     "fc.o.household": "Backyard (household) farms \u00B7 latest ({x})", "fc.o.establishment": "Commercial farms \u00B7 latest ({x})", "fc.o.average": "Average of all months ({x})",
     "fc.s2": "Farm price we will use (PHP/kg)", "fc.hint": "Set by your choice above.", "fc.s3": "How far ahead?",
     "fc.next1": "Next month", "fc.nextN": "Next {n} months",
-    "hero.label": "Likely market price {when}", "hero.when1": "next month", "hero.whenN": "in {n} months",
-    "hero.about": "About {price} {unit} at the market.", "hero.tray": "That is about {tray} for a tray of 30.",
-    "hero.last": "Last recorded market price", "hero.trust": "How much to trust this guess",
+    "hero.label": "Likely market price {when}", "hero.label.farm": "Likely farmgate price {when}", "hero.when1": "next month", "hero.whenN": "in {n} months",
+    "hero.about": "About {price} {unit} at the market.", "hero.about.farm": "About {price} {unit} at the farmgate.", "hero.tray": "That is about {tray} for a tray of 30.",
+    "hero.last": "Last recorded market price", "hero.last.farm": "Last recorded farmgate price", "hero.trust": "How much to trust this guess",
     "trust.good": "Reliable", "trust.ok": "Fairly reliable", "trust.low": "Rough guide only",
     "trust.note": "Past guesses this far ahead were off by about {mape}% on average.",
     "hero.modelNote": "Made with the {model}. You can change the model in Advanced settings.",
@@ -151,12 +163,12 @@ const STRINGS = {
     "home.priceFarm": "{product} is paid {price} {unit} at the farm.",
     "home.farmLine": "Farmers get {farm} {unit}. The difference is {gap} (level: {level}).",
     "home.up": "Up {amount} from last month", "home.down": "Down {amount} from last month", "home.flat": "Same as last month",
-    "home.next.title": "Our guess for next month", "home.next.cta": "See the forecast",
+    "home.next.title": "Our guess for next month", "home.next.title.farm": "Our farmgate guess for next month", "home.next.cta": "See the forecast",
     "home.range.2y": "Last 2 years", "home.range.all": "All years",
     "gap.simple": "Shoppers pay {gap} more than farmers get.",
     "gap.scale.Low": "Small", "gap.scale.Medium": "Normal", "gap.scale.High": "Big",
     "gap.cuts": "Small up to {a} \u00B7 Normal up to {b}",
-    "fc.h1": "Next month", "fc.h2": "2 months", "fc.h3": "3 months", "fc.h6": "6 months", "fc.h12": "1 year",
+    "fc.h1": "Next month", "fc.h2": "2 months", "fc.h3": "3 months", "fc.h6": "6 months", "fc.h12": "1 year", "fc.custom": "Custom months",
     "hero.when12": "in 1 year",
     "fc.vsLast": "{sign}{amount} from the last recorded price",
     "fc.rel2.title": "How reliable is this guess?",
@@ -167,7 +179,7 @@ const STRINGS = {
     "fc.adv.compare": "Compare the methods (for analysts)", "fc.adv.auto": "The app tests every method on past months and picks the most accurate one for this time ahead. The star marks the pick.",
     "fc.adv.col1": "Method", "fc.adv.col2": "Usual miss", "fc.adv.col3": "Percent miss",
     "fc.whatif": "What if the farm price is different?", "fc.whatif.body": "Type a farm price to see how the guess changes. It starts at the latest farm price ({x}).", "fc.whatif.apply": "Apply", "fc.whatif.reset": "Back to latest",
-    "fc.how2.body": "We look at how the market price changed in recent months and how farm prices changed. Then we predict how much the market price will change. We test several methods on past months and use the most accurate one.",
+    "fc.how2.body": "We look at how the market price changed in recent months and how farm prices changed. Then we predict how much the market price will change. We test several methods on past months and use the most accurate one.", "fc.how2.farm": "We look at how the farmgate price changed in recent months. Then we predict how much the farmgate price will change. We test several methods on past months and use the most accurate one.",
     "model2.naive": "Repeat last price", "model2.linear": "Farm-link (linear)", "model2.arima": "Recent trend (ARIMA 2,1,0)", "model2.xgboost": "Boosted stumps (XGBoost-style)", "model2.randomForest": "Random forest",
     "an.hint": "A longer bar means the two move together more often.",
     "data.recent": "Recent months", "data.col.month": "Month", "data.more": "More tools: compare sources, charts, import your own data",
@@ -175,7 +187,7 @@ const STRINGS = {
   fil: {
     "brand.sub": "Gabay sa presyo ng manok at itlog",
     "nav.home": "Home", "nav.forecast": "Hula ng presyo", "nav.analysis": "Bakit gumagalaw ang presyo", "nav.data": "Mga rekord ng presyo", "nav.settings": "Mga advanced na setting", "nav.help": "Tulong",
-    "status.ready": "Handa na ang data", "status.loading": "Naglo-load", "status.needs": "Kailangan ng data",
+    "status.ready": "Handa na ang data", "status.loading": "Naglo-load", "status.needs": "Kailangan ng data", "loading.title": "Inihahanda ang mga rekord ng presyo", "loading.body": "Sinusuri ng munting sisiw ang pinakabagong presyo sa bukid at palengke.",
     "foot.psa": "Data mula sa PSA OpenSTAT",
     "scope.national": "Buong Pilipinas", "scope.chooseRegion": "Pumili ng region", "scope.chooseProvince": "Pumili ng probinsya",
     "filter.product": "Produkto", "filter.where": "Saan", "filter.region": "Region", "filter.province": "Probinsya",
@@ -206,13 +218,13 @@ const STRINGS = {
     "act.help": "Tulong", "act.help.d": "Simpleng hakbang at talaan ng salita",
     "dash.terms": "Ano ang ibig sabihin ng mga salitang ito?",
     "fc.title": "Hula ng presyo", "fc.sub": "{product} \u00B7 {scope}. Gabay ito sa pagpaplano, hindi pangako ng presyo sa palengke.",
-    "fc.noRetail": "May presyo sa bukid ang produktong ito pero walang rekord ng presyo sa palengke, kaya hindi namin mahuhulaan ang presyo nito sa palengke.",
+    "fc.noRetail": "Walang magagamit na rekord ng presyo para sa hula ng produktong ito.",
     "fc.setup": "Ihanda ang hula", "fc.s1": "Aling presyo sa bukid ang gagamitin?",
     "fc.o.household": "Mga backyard (household) na bukid \u00B7 pinakabago ({x})", "fc.o.establishment": "Mga komersyal na farm \u00B7 pinakabago ({x})", "fc.o.average": "Karaniwan sa lahat ng buwan ({x})",
     "fc.s2": "Presyo sa bukid na gagamitin (PHP/kg)", "fc.hint": "Itinakda ng napili mo sa itaas.", "fc.s3": "Gaano kalayo ang hula?",
     "fc.next1": "Susunod na buwan", "fc.nextN": "Susunod na {n} buwan",
-    "hero.label": "Posibleng presyo sa palengke {when}", "hero.when1": "sa susunod na buwan", "hero.whenN": "sa loob ng {n} buwan",
-    "hero.about": "Mga {price} {unit} sa palengke.", "hero.tray": "Humigit-kumulang {tray} bawat tray na 30.",
+    "hero.label": "Posibleng presyo sa palengke {when}", "hero.label.farm": "Posibleng presyo sa bukid {when}", "hero.when1": "sa susunod na buwan", "hero.whenN": "sa loob ng {n} buwan",
+    "hero.about": "Mga {price} {unit} sa palengke.", "hero.about.farm": "Mga {price} {unit} sa bukid.", "hero.tray": "Humigit-kumulang {tray} bawat tray na 30.",
     "hero.last": "Huling naitalang presyo sa palengke", "hero.trust": "Gaano katiyak ang hulang ito",
     "trust.good": "Maaasahan", "trust.ok": "Medyo maaasahan", "trust.low": "Magaspang na gabay lamang",
     "trust.note": "Ang mga nakaraang hula sa layong ito ay may mali na mga {mape}% sa karaniwan.",
@@ -262,12 +274,12 @@ const STRINGS = {
     "home.priceFarm": "Ang {product} ay binabayaran ng {price} {unit} sa bukid.",
     "home.farmLine": "Ang bayad sa magsasaka ay {farm} {unit}. Ang agwat ay {gap} (antas: {level}).",
     "home.up": "Tumaas ng {amount} mula noong nakaraang buwan", "home.down": "Bumaba ng {amount} mula noong nakaraang buwan", "home.flat": "Kapareho ng nakaraang buwan",
-    "home.next.title": "Ang aming hula para sa susunod na buwan", "home.next.cta": "Tingnan ang hula",
+    "home.next.title": "Ang aming hula para sa susunod na buwan", "home.next.title.farm": "Ang aming hula sa presyo sa bukid para sa susunod na buwan", "home.next.cta": "Tingnan ang hula",
     "home.range.2y": "Huling 2 taon", "home.range.all": "Lahat ng taon",
     "gap.simple": "Mas malaki ng {gap} ang binabayaran ng mamimili kaysa sa bayad sa magsasaka.",
     "gap.scale.Low": "Maliit", "gap.scale.Medium": "Katamtaman", "gap.scale.High": "Malaki",
     "gap.cuts": "Maliit hanggang {a} \u00B7 Katamtaman hanggang {b}",
-    "fc.h1": "Susunod na buwan", "fc.h2": "2 buwan", "fc.h3": "3 buwan", "fc.h6": "6 na buwan", "fc.h12": "1 taon",
+    "fc.h1": "Susunod na buwan", "fc.h2": "2 buwan", "fc.h3": "3 buwan", "fc.h6": "6 na buwan", "fc.h12": "1 taon", "fc.custom": "Pasadyang buwan",
     "hero.when12": "sa loob ng 1 taon",
     "fc.vsLast": "{sign}{amount} mula sa huling naitalang presyo",
     "fc.rel2.title": "Gaano katiyak ang hulang ito?",
@@ -278,7 +290,7 @@ const STRINGS = {
     "fc.adv.compare": "Ihambing ang mga pamamaraan (para sa mga analyst)", "fc.adv.auto": "Sinusubukan ng app ang bawat pamamaraan sa mga nakaraang buwan at pinipili ang pinakatumpak para sa layong ito. Minarkahan ng bituin ang napili.",
     "fc.adv.col1": "Pamamaraan", "fc.adv.col2": "Karaniwang mali", "fc.adv.col3": "Porsyentong mali",
     "fc.whatif": "Paano kung iba ang presyo sa bukid?", "fc.whatif.body": "Maglagay ng presyo sa bukid para makita kung paano nagbabago ang hula. Nagsisimula ito sa pinakabagong presyo sa bukid ({x}).", "fc.whatif.apply": "Ilapat", "fc.whatif.reset": "Bumalik sa pinakabago",
-    "fc.how2.body": "Tinitingnan namin kung paano nagbago ang presyo sa palengke nitong mga nakaraang buwan at kung paano nagbago ang presyo sa bukid. Pagkatapos, hinuhulaan namin kung gaano magbabago ang presyo sa palengke. Sinusubukan namin ang ilang pamamaraan sa mga nakaraang buwan at ginagamit ang pinakatumpak.",
+    "fc.how2.body": "Tinitingnan namin kung paano nagbago ang presyo sa palengke nitong mga nakaraang buwan at kung paano nagbago ang presyo sa bukid. Pagkatapos, hinuhulaan namin kung gaano magbabago ang presyo sa palengke. Sinusubukan namin ang ilang pamamaraan sa mga nakaraang buwan at ginagamit ang pinakatumpak.", "fc.how2.farm": "Tinitingnan namin kung paano nagbago ang presyo sa bukid nitong mga nakaraang buwan. Pagkatapos, hinuhulaan namin kung gaano magbabago ang presyo sa bukid. Sinusubukan namin ang ilang pamamaraan sa mga nakaraang buwan at ginagamit ang pinakatumpak.",
     "model2.naive": "Ulitin ang huling presyo", "model2.linear": "Farm-link (linear)", "model2.arima": "Kamakailang galaw (ARIMA 2,1,0)", "model2.xgboost": "Boosted stumps (XGBoost-style)", "model2.randomForest": "Random forest",
     "an.hint": "Mas mahabang bar, mas madalas silang sabay gumalaw.",
     "data.recent": "Mga huling buwan", "data.col.month": "Buwan", "data.more": "Iba pang kasangkapan: ihambing ang mga source, mga tsart, mag-import ng sariling data",
@@ -335,6 +347,10 @@ const SOURCE_DEFS = [
 ];
 
 const SEED_DATA = [];
+const bundledSourceCache = new Map();
+const bundledSourcePromises = new Map();
+const bundledSourceItemCache = new Map();
+const bundledSourceItemPromises = new Map();
 
 const DEFAULT_SETTINGS = {
   modelType: "linear",
@@ -593,10 +609,11 @@ function fmtPHP(n) {
 }
 
 function constrainForecast(value, rows) {
-  if (!Number.isFinite(Number(value))) return null;
   const retailValues = rows
     .map(row => Number(row.retail))
     .filter(value => Number.isFinite(value));
+  const fallback = retailValues.length ? retailValues[retailValues.length - 1] : null;
+  if (!Number.isFinite(Number(value)) || Number(value) <= 0) return fallback;
   if (!retailValues.length) return Number(value);
   const upperBound = Math.max(...retailValues) * 1.5;
   return Math.min(Math.max(Number(value), 0), upperBound);
@@ -638,6 +655,26 @@ function formatChartPeriod(value) {
     return Number.isFinite(month) ? `${month}/${namedMonth[1]}` : text;
   }
   return text;
+}
+
+function forecastDateLabel(row, monthsAhead, lang) {
+  const period = String(row?.periodKey || row?.period || "");
+  const numericMonth = period.match(/^(\d{4})-(\d{2})$/);
+  let year = numericMonth ? Number(numericMonth[1]) : null;
+  let month = numericMonth ? Number(numericMonth[2]) : null;
+  if (!numericMonth) {
+    const namedMonth = period.match(/^([A-Za-z]+)\s+(\d{4})$/);
+    if (namedMonth) {
+      const parsed = new Date(`${namedMonth[1]} 1, ${namedMonth[2]}`);
+      year = parsed.getFullYear();
+      month = parsed.getMonth() + 1;
+    }
+  }
+  if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) return null;
+  return new Date(Date.UTC(year, month - 1 + monthsAhead, 1)).toLocaleDateString(
+    lang === "fil" ? "fil-PH" : "en-US",
+    { month: "long", year: "numeric", timeZone: "UTC" }
+  );
 }
 
 function getChartTicks(data, key) {
@@ -754,20 +791,54 @@ function combineGeographicPriceRows(sources) {
   }));
 }
 
-async function loadAllBundledSources(product = PRODUCT_DEFS[0], geographicScope = DEFAULT_GEOGRAPHIC_SCOPE) {
-  const loaded = await Promise.all(SOURCE_DEFS.map(async definition => {
-    try {
-      const sourceFile = geographicScope.level === "national" && definition.nationalFile ? definition.nationalFile : definition.file;
-      const response = await fetch(`/data/${sourceFile}`);
+function sourceCacheKey(definition, product, geographicScope) {
+  const sourceFile = geographicScope.level === "national" && definition.nationalFile ? definition.nationalFile : definition.file;
+  const scopeKey = [geographicScope.level, geographicScope.region, geographicScope.province].join("|");
+  return `${definition.id}|${sourceFile}|${product.id}|${scopeKey}`;
+}
+
+function loadBundledSource(definition, product, geographicScope) {
+  const cacheKey = sourceCacheKey(definition, product, geographicScope);
+  if (bundledSourceItemCache.has(cacheKey)) return Promise.resolve(bundledSourceItemCache.get(cacheKey));
+  if (bundledSourceItemPromises.has(cacheKey)) return bundledSourceItemPromises.get(cacheKey);
+  const sourceFile = geographicScope.level === "national" && definition.nationalFile ? definition.nationalFile : definition.file;
+  const promise = fetch(`/data/${sourceFile}`)
+    .then(response => {
       if (!response.ok) throw new Error(`Could not load ${sourceFile}`);
-      const parsed = Papa.parse(await response.text(), { header: true, skipEmptyLines: true });
+      return response.text();
+    })
+    .then(text => {
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
       const rows = definition.kind === "paired" ? normalizeMasterRows(parsed.data, product) : normalizeSeriesRows(parsed.data, definition, product, geographicScope);
-      return { ...definition, file: sourceFile, unit: definition.scale === "price" ? product.unit : definition.unit, rows, loadError: "" };
-    } catch (error) {
+      const source = { ...definition, file: sourceFile, unit: definition.scale === "price" ? product.unit : definition.unit, rows, loadError: "" };
+      bundledSourceItemCache.set(cacheKey, source);
+      bundledSourceItemPromises.delete(cacheKey);
+      return source;
+    })
+    .catch(error => {
+      bundledSourceItemPromises.delete(cacheKey);
       return { ...definition, unit: definition.scale === "price" ? product.unit : definition.unit, rows: [], loadError: error.message };
-    }
-  }));
-  return Object.fromEntries(loaded.map(source => [source.id, source]));
+    });
+  bundledSourceItemPromises.set(cacheKey, promise);
+  return promise;
+}
+
+function loadAllBundledSources(product = PRODUCT_DEFS[0], geographicScope = DEFAULT_GEOGRAPHIC_SCOPE) {
+  const scopeKey = [geographicScope.level, geographicScope.region, geographicScope.province].join("|");
+  const cacheKey = `${product.id}|${scopeKey}`;
+  if (bundledSourceCache.has(cacheKey)) return bundledSourceCache.get(cacheKey);
+  if (bundledSourcePromises.has(cacheKey)) return bundledSourcePromises.get(cacheKey);
+  const promise = Promise.all(SOURCE_DEFS.map(definition => loadBundledSource(definition, product, geographicScope))).then(loaded => {
+    const result = Object.fromEntries(loaded.map(source => [source.id, source]));
+    bundledSourceCache.set(cacheKey, result);
+    bundledSourcePromises.delete(cacheKey);
+    return result;
+  }).catch(error => {
+    bundledSourcePromises.delete(cacheKey);
+    throw error;
+  });
+  bundledSourcePromises.set(cacheKey, promise);
+  return promise;
 }
 
 async function loadAvailableGeographies() {
@@ -856,55 +927,68 @@ export default function App() {
   }, [selectedProductId]);
 
   const modelOutputs = useMemo(() => {
-    const retailDataset = dataset.filter(row => row.retail !== null && row.retail !== undefined && Number.isFinite(Number(row.retail)));
-    if (!retailDataset.length) return null;
-    const lastRow = retailDataset[retailDataset.length - 1] || null;
-    const nextFarmgate = lastRow ? Number(lastRow.farmgate) : 0;
-    const nextTimeIndex = retailDataset.length ? retailDataset.length + 1 : 1;
-    return buildModelEvaluation(retailDataset, settings, nextFarmgate, nextTimeIndex, sources.production?.rows || []);
-  }, [dataset, settings, sources]);
-
-  useEffect(() => {
-    let cancelled = false;
-    importedDatasetActiveRef.current = false;
-    loadBundledDataset()
-      .then(nextRows => {
-        if (!cancelled && !importedDatasetActiveRef.current) {
-          bundledDatasetRef.current = nextRows;
-          setDataset(nextRows);
-          setDataStatus("ready");
-        }
-      })
-      .catch(() => { if (!cancelled) setDataStatus("error"); });
-    return () => { cancelled = true; };
-  }, [setDataset]);
-
-  useEffect(() => {
-    let cancelled = false;
     const product = PRODUCT_DEFS.find(item => item.id === selectedProductId) || PRODUCT_DEFS[0];
-    setSources({});
-    loadAllBundledSources(product, geographicScope).then(nextSources => {
+    const forecastDataset = forecastRowsForProduct(dataset, product);
+    const farmgateDataset = farmgateForecastRows(dataset);
+    if (!forecastDataset.length && !farmgateDataset.length) return null;
+    const forecastLastRow = forecastDataset[forecastDataset.length - 1] || null;
+    const farmgateLastRow = farmgateDataset[farmgateDataset.length - 1] || null;
+    const retailEvaluation = forecastDataset.length
+      ? buildModelEvaluation(forecastDataset, settings, Number(forecastLastRow.farmgate), forecastDataset.length + 1, sources.production?.rows || [])
+      : null;
+    const farmgateEvaluation = farmgateDataset.length
+      ? buildModelEvaluation(farmgateDataset, settings, Number(farmgateLastRow.farmgate), farmgateDataset.length + 1, sources.production?.rows || [])
+      : null;
+    return {
+      ...(retailEvaluation || farmgateEvaluation),
+      engine: retailEvaluation?.engine || farmgateEvaluation?.engine || null,
+      retailEngine: retailEvaluation?.engine || null,
+      farmgateEngine: farmgateEvaluation?.engine || null,
+    };
+  }, [dataset, selectedProductId, settings, sources]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let backgroundTimer = null;
+    const product = PRODUCT_DEFS.find(item => item.id === selectedProductId) || PRODUCT_DEFS[0];
+    setDataStatus("loading");
+    if (!importedDatasetActiveRef.current) setDataset([]);
+    const primaryIds = geographicScope.level === "national" ? ["master"] : ["farmgate-household", "retail"];
+    const primaryDefinitions = SOURCE_DEFS.filter(definition => primaryIds.includes(definition.id));
+    Promise.all(primaryDefinitions.map(definition => loadBundledSource(definition, product, geographicScope))).then(primaryLoaded => {
       if (cancelled) return;
-      setSources(nextSources);
-      const masterRows = nextSources.master?.rows || [];
+      const primarySources = Object.fromEntries(primaryLoaded.map(source => [source.id, source]));
+      setSources(primarySources);
+      const masterRows = primarySources.master?.rows || [];
       const thresholds = deriveSpreadThresholds(masterRows);
       if (thresholds) setSettings(current => ({ ...current, ...thresholds }));
-      const nextDataset = geographicScope.level === "national" ? masterRows : combineGeographicPriceRows(nextSources);
+      const nextDataset = geographicScope.level === "national"
+        ? masterRows
+        : combineGeographicPriceRows(primarySources);
       bundledDatasetRef.current = nextDataset;
       if (!importedDatasetActiveRef.current) {
         setDataset(nextDataset);
         setDataStatus(nextDataset.length ? "ready" : "error");
       }
+      if (tab === "data" || tab === "analysis") {
+        backgroundTimer = setTimeout(() => {
+          loadAllBundledSources(product, geographicScope).then(nextSources => {
+            if (!cancelled) setSources(nextSources);
+          });
+        }, 0);
+      }
     }).catch(() => {
       if (cancelled) return;
-      setSources({});
       loadBundledDataset()
         .then(nextRows => { if (!cancelled) setDataset(nextRows); })
         .catch(() => { if (!cancelled) setDataset([]); });
       setDataStatus("error");
     });
-    return () => { cancelled = true; };
-  }, [selectedProductId, geographicScope, setDataset, setSettings]);
+    return () => {
+      cancelled = true;
+      if (backgroundTimer !== null) clearTimeout(backgroundTimer);
+    };
+  }, [selectedProductId, geographicScope, tab, setDataset, setSettings]);
 
   useEffect(() => {
     const masterRows = sources.master?.rows;
@@ -1016,12 +1100,16 @@ export default function App() {
           </header>
 
           <div className="content">
-            {tab === "dashboard" && <Dashboard rows={rows} stats={stats} selectedProductId={selectedProductId} geographicScope={geographicScope} settings={settings} setTab={setTab} modelOutputs={modelOutputs} />}
-            {tab === "data" && <DataTab rows={rows} setDataset={setDataset} activateImportedDataset={importedRows => { importedDatasetActiveRef.current = true; setDataset(mergeDashboardRows(bundledDatasetRef.current, importedRows)); }} sources={sources} activePriceSourceId={activePriceSourceId} setActivePriceSourceId={setActivePriceSourceId} comparePriceIds={comparePriceIds} setComparePriceIds={setComparePriceIds} activeInventorySourceId={activeInventorySourceId} setActiveInventorySourceId={setActiveInventorySourceId} compareInventoryIds={compareInventoryIds} setCompareInventoryIds={compareInventoryIds} activeVolumeSourceId={activeVolumeSourceId} setActiveVolumeSourceId={setActiveVolumeSourceId} compareVolumeIds={compareVolumeIds} setCompareVolumeIds={compareVolumeIds} selectedProductId={selectedProductId} setSelectedProductId={setSelectedProductId} geographicScope={geographicScope} setGeographicScope={setGeographicScope} availableGeographies={availableGeographies} />}
-            {tab === "analysis" && <AnalysisTab rows={rows} productionRows={sources.production?.rows || []} inventoryRows={sources[activeInventorySourceId]?.rows || []} selectedProductId={selectedProductId} geographicScope={geographicScope} />}
-            {tab === "predict" && <PredictTab settings={settings} rows={rows} modelOutputs={modelOutputs} sources={sources} selectedProductId={selectedProductId} events={events} setEvents={setEvents} geographicScope={geographicScope} availableGeographies={availableGeographies} />}
-            {tab === "settings" && <SettingsTab settings={settings} setSettings={setSettings} setDataset={setDataset} rows={rows} />}
-            {tab === "faq" && <FaqTab />}
+            {dataStatus === "loading" ? <LoadingState /> : (
+              <>
+                {tab === "dashboard" && <Dashboard rows={rows} stats={stats} selectedProductId={selectedProductId} geographicScope={geographicScope} settings={settings} setTab={setTab} modelOutputs={modelOutputs} />}
+                {tab === "data" && <DataTab rows={rows} setDataset={setDataset} activateImportedDataset={importedRows => { importedDatasetActiveRef.current = true; setDataset(mergeDashboardRows(bundledDatasetRef.current, importedRows)); }} sources={sources} activePriceSourceId={activePriceSourceId} setActivePriceSourceId={setActivePriceSourceId} comparePriceIds={comparePriceIds} setComparePriceIds={comparePriceIds} activeInventorySourceId={activeInventorySourceId} setActiveInventorySourceId={setActiveInventorySourceId} compareInventoryIds={compareInventoryIds} setCompareInventoryIds={compareInventoryIds} activeVolumeSourceId={activeVolumeSourceId} setActiveVolumeSourceId={activeVolumeSourceId} compareVolumeIds={compareVolumeIds} setCompareVolumeIds={compareVolumeIds} selectedProductId={selectedProductId} setSelectedProductId={setSelectedProductId} geographicScope={geographicScope} setGeographicScope={setGeographicScope} availableGeographies={availableGeographies} />}
+                {tab === "analysis" && <AnalysisTab rows={rows} productionRows={sources.production?.rows || []} inventoryRows={sources[activeInventorySourceId]?.rows || []} selectedProductId={selectedProductId} geographicScope={geographicScope} />}
+                {tab === "predict" && <PredictTab settings={settings} rows={rows} modelOutputs={modelOutputs} sources={sources} selectedProductId={selectedProductId} events={events} setEvents={setEvents} geographicScope={geographicScope} availableGeographies={availableGeographies} />}
+                {tab === "settings" && <SettingsTab settings={settings} setSettings={setSettings} rows={rows} />}
+                {tab === "faq" && <FaqTab />}
+              </>
+            )}
           </div>
         </main>
       </div>
@@ -1197,12 +1285,15 @@ function Dashboard({ rows, stats, selectedProductId, geographicScope, settings, 
   const [showWelcome, setShowWelcome] = useState(() => { try { return localStorage.getItem("manok-welcome") !== "done"; } catch (e) { return true; } });
   const closeWelcome = () => { setShowWelcome(false); try { localStorage.setItem("manok-welcome", "done"); } catch (e) { /* ignore */ } };
   const unit = unitWord(product, t.lang);
+  const forecastUsesFarmgate = !product.retailField;
   const hasRetail = !!(stats && stats.hasRetail && last && last.retail !== null && last.retail !== undefined);
   const mainKey = hasRetail ? "retail" : "farmgate";
   const move = last && prev && Number.isFinite(Number(last[mainKey])) && Number.isFinite(Number(prev[mainKey])) ? Number(last[mainKey]) - Number(prev[mainKey]) : null;
   const moveText = move === null ? null : Math.abs(move) < 0.005 ? t("home.flat") : move > 0 ? t("home.up", { amount: fmtPHP(move) }) : t("home.down", { amount: fmtPHP(Math.abs(move)) });
-  const rec = modelOutputs && modelOutputs.recommendation ? modelOutputs[modelOutputs.recommendation] : null;
-  const guess = rec && Number.isFinite(rec.forecast) ? constrainForecast(rec.forecast, rows) : null;
+  const forecastEngine = forecastUsesFarmgate ? modelOutputs?.farmgateEngine : modelOutputs?.retailEngine || modelOutputs?.engine;
+  const rec = forecastEngine && forecastEngine.recommendation ? forecastEngine.models[forecastEngine.recommendation] : null;
+  const forecastRows = forecastUsesFarmgate ? farmgateForecastRows(rows) : rows;
+  const guess = rec && Number.isFinite(rec.forecast) ? constrainForecast(rec.forecast, forecastRows) : null;
   const trust = rec ? trustFromMape(rec.mape) : null;
   const chartRows = range === "2y" ? rows.slice(-24) : rows;
   const chartTicks = range === "2y" ? chartRows.filter((_, i) => i % 4 === 0).map(row => row.period) : getChartTicks(chartRows, "period").filter((_, i) => i % 2 === 0);
@@ -1239,7 +1330,7 @@ function Dashboard({ rows, stats, selectedProductId, geographicScope, settings, 
 
             {guess !== null && (
               <section className="card hero-card next-card">
-                <span className="hero-label">{t("home.next.title")}</span>
+                <span className="hero-label">{t(forecastUsesFarmgate ? "home.next.title.farm" : "home.next.title")}</span>
                 <span className="hero-value">{fmtPHP(guess)}</span>
                 {trust && <span className={`trust-pill trust-${trust}`}>{t("trust." + trust)}</span>}
                 <button className="btn btn-light" onClick={() => setTab("predict")}>{t("home.next.cta")} <ArrowRight size={16} /></button>
@@ -1723,28 +1814,39 @@ function ExternalEventsPanel({ events, setEvents, product, baseline, adjusted, a
 function PredictTab({ settings, rows, modelOutputs, sources, selectedProductId, events, setEvents, geographicScope, availableGeographies }) {
   const t = useT();
   const [periodsAhead, setPeriodsAhead] = useState(1);
+  const [customPeriods, setCustomPeriods] = useState("");
   const [farmDraft, setFarmDraft] = useState("");
   const [farmText, setFarmText] = useState("");
   const product = PRODUCT_DEFS.find(item => item.id === selectedProductId) || PRODUCT_DEFS[0];
+  const forecastUsesFarmgate = !product.retailField;
   const productName = productLabel(product, t.lang);
   const scopeText = geographicScope.level === "national" ? t("scope.national") : geographicScope.level === "region" ? (geographicScope.region || t("filter.region")) : (geographicScope.province || t("filter.province"));
-  const retailRows = useMemo(() => rows.filter(row => row.retail !== null && row.retail !== undefined && Number.isFinite(Number(row.retail))), [rows]);
-  const hasRetail = retailRows.length > 0;
-  const lastRow = hasRetail ? retailRows[retailRows.length - 1] : null;
+  const forecastRows = useMemo(() => forecastRowsForProduct(rows, product), [rows, product]);
+  const farmgateRows = useMemo(() => farmgateForecastRows(rows), [rows]);
+  const hasForecast = forecastRows.length > 0;
+  const hasFarmgateForecast = farmgateRows.length > 0;
+  const lastRow = hasForecast ? forecastRows[forecastRows.length - 1] : null;
   const latestFarm = lastRow ? Number(lastRow.farmgate) : null;
   const farmOverride = farmText !== "" && Number.isFinite(Number(farmText)) ? Number(farmText) : null;
-  const shared = periodsAhead === 1 && farmOverride === null && modelOutputs && modelOutputs.engine;
-  const ownEngine = useMemo(() => (!shared && hasRetail) ? runForecastEngine(retailRows, Number(periodsAhead), farmOverride) : null, [shared, hasRetail, retailRows, periodsAhead, farmOverride]);
-  const engine = shared ? modelOutputs.engine : ownEngine;
+  const shared = periodsAhead === 1 && farmOverride === null && modelOutputs;
+  const ownRetailEngine = useMemo(() => (!shared && hasForecast) ? runForecastEngine(forecastRows, Number(periodsAhead), farmOverride) : null, [shared, hasForecast, forecastRows, periodsAhead, farmOverride]);
+  const ownFarmgateEngine = useMemo(() => (!shared && hasFarmgateForecast) ? runForecastEngine(farmgateRows, Number(periodsAhead), farmOverride) : null, [shared, hasFarmgateForecast, farmgateRows, periodsAhead, farmOverride]);
+  const retailEngine = shared ? modelOutputs.retailEngine : ownRetailEngine;
+  const farmgateForecastEngine = shared ? modelOutputs.farmgateEngine : ownFarmgateEngine;
+  const engine = forecastUsesFarmgate ? farmgateForecastEngine : retailEngine;
   const recId = engine ? (farmOverride !== null ? "linear" : engine.recommendation) : null;
   const rec = recId ? engine.models[recId] : null;
+  const farmgateRecId = farmgateForecastEngine ? (farmOverride !== null ? "linear" : farmgateForecastEngine.recommendation) : null;
+  const farmgateRec = farmgateRecId ? farmgateForecastEngine.models[farmgateRecId] : null;
   const naive = engine ? engine.naive : null;
-  const predicted = rec ? constrainForecast(rec.forecast, rows) : null;
+  const predicted = rec ? constrainForecast(rec.forecast, forecastUsesFarmgate ? forecastRows : rows) : null;
+  const farmgatePredicted = forecastUsesFarmgate ? predicted : farmgateRec ? constrainForecast(farmgateRec.forecast, farmgateRows) : null;
   const activeEventAdjustment = eventAdjustment(events, product.name, geographicScope);
   const eventAwarePredicted = predicted == null ? null : constrainForecast(predicted * (1 + activeEventAdjustment / 100), rows);
   const unit = unitWord(product, t.lang);
   const perPiece = /pc|piece/i.test(product.unit || "");
-  const whenText = periodsAhead === 1 ? t("hero.when1") : periodsAhead === 12 ? t("hero.when12") : t("hero.whenN", { n: periodsAhead });
+  const targetDate = forecastDateLabel(lastRow, periodsAhead, t.lang);
+  const whenText = targetDate || (periodsAhead === 1 ? t("hero.when1") : periodsAhead === 12 ? t("hero.when12") : t("hero.whenN", { n: periodsAhead }));
   const trust = rec ? trustFromMape(rec.mape) : null;
   const farmUsed = farmOverride !== null ? farmOverride : latestFarm;
   const gapLevel = predicted != null && Number.isFinite(farmUsed) ? classify(predicted - farmUsed, settings) : null;
@@ -1753,6 +1855,12 @@ function PredictTab({ settings, rows, modelOutputs, sources, selectedProductId, 
   const verdict = ratio === null ? null : ratio < 0.97 ? "better" : ratio <= 1.03 ? "same" : "worse";
   const barMax = rec && naive ? Math.max(rec.mae, naive.mae) || 1 : 1;
   const horizons = [[1, "fc.h1"], [2, "fc.h2"], [3, "fc.h3"], [6, "fc.h6"], [12, "fc.h12"]];
+  const applyCustomPeriods = event => {
+    const value = event.target.value;
+    setCustomPeriods(value);
+    const months = Number(value);
+    if (Number.isInteger(months) && months >= 1 && months <= 120) setPeriodsAhead(months);
+  };
   const applyFarm = () => setFarmText(farmDraft.trim());
 
   return (
@@ -1764,20 +1872,24 @@ function PredictTab({ settings, rows, modelOutputs, sources, selectedProductId, 
         </div>
       </div>
 
-      {!hasRetail && <div className="notice">{t("fc.noRetail")}</div>}
+      {!hasForecast && <div className="notice">{t("fc.noRetail")}</div>}
 
-      {hasRetail && (
+      {hasForecast && (
         <>
-          <div className="seg" role="group" aria-label={t("fc.s3")}>
-            {horizons.map(([n, key]) => <button type="button" key={n} className={periodsAhead === n ? "on" : ""} onClick={() => setPeriodsAhead(n)}>{t(key)}</button>)}
+          <div className="forecast-period-controls">
+            <div className="seg" role="group" aria-label={t("fc.s3")}>
+              {horizons.map(([n, key]) => <button type="button" key={n} className={customPeriods === "" && periodsAhead === n ? "on" : ""} onClick={() => { setCustomPeriods(""); setPeriodsAhead(n); }}>{forecastDateLabel(lastRow, n, t.lang) || t(key)}</button>)}
+            </div>
+            <label className="forecast-period-input">{t("fc.custom")}<input type="number" min="1" max="120" step="1" value={customPeriods} onChange={applyCustomPeriods} placeholder="1–120" aria-label={t("fc.custom")} /></label>
           </div>
 
           <section className="card hero-card hero-simple">
-            <span className="hero-label">{t("hero.label", { when: whenText })}</span>
+            <span className="hero-label">{t(forecastUsesFarmgate ? "hero.label.farm" : "hero.label", { when: whenText })}</span>
             <span className="hero-value">{predicted != null ? fmtPHP(predicted) : "\u2014"}</span>
-            {predicted != null && <p className="hero-sentence">{t("hero.about", { price: fmtPHP(predicted), unit })}{perPiece ? " " + t("hero.tray", { tray: fmtPHP(predicted * 30) }) : ""}</p>}
+            {predicted != null && <p className="hero-sentence">{t(forecastUsesFarmgate ? "hero.about.farm" : "hero.about", { price: fmtPHP(predicted), unit })}{!forecastUsesFarmgate && perPiece ? " " + t("hero.tray", { tray: fmtPHP(predicted * 30) }) : ""}</p>}
+            {!forecastUsesFarmgate && farmgatePredicted != null && <div className="forecast-alt"><span>{t("hero.label.farm", { when: whenText })}</span><b>{fmtPHP(farmgatePredicted)}</b><small>{t("hero.about.farm", { price: fmtPHP(farmgatePredicted), unit })}</small></div>}
             <div className="hero-facts">
-              <div className="hero-fact"><small>{t("hero.last")}</small><b>{fmtPHP(lastRow.retail)}</b><small>{diff !== null ? t("fc.vsLast", { sign: diff >= 0 ? "+" : "\u2212", amount: fmtPHP(Math.abs(diff)) }) : lastRow.period}</small></div>
+              <div className="hero-fact"><small>{t(forecastUsesFarmgate ? "hero.last.farm" : "hero.last")}</small><b>{fmtPHP(lastRow.retail)}</b><small>{diff !== null ? t("fc.vsLast", { sign: diff >= 0 ? "+" : "\u2212", amount: fmtPHP(Math.abs(diff)) }) : lastRow.period}</small></div>
               {trust && <div className={`hero-fact trust-${trust}`}><small>{t("hero.trust")}</small><b>{t("trust." + trust)}</b><small>{t("trust.note", { mape: rec.mape.toFixed(1) })}</small></div>}
             </div>
             {gapLevel && <span className="hero-level" style={{ background: LEVEL_COLOR[gapLevel] }}>{t("term.gap")}: {t("gap.scale." + gapLevel)}</span>}
@@ -1834,7 +1946,7 @@ function PredictTab({ settings, rows, modelOutputs, sources, selectedProductId, 
 
           <details className="card fold">
             <summary>{t("fc.how")}</summary>
-            <p className="muted">{t("fc.how2.body")}</p>
+            <p className="muted">{t(forecastUsesFarmgate ? "fc.how2.farm" : "fc.how2.body")}</p>
           </details>
         </>
       )}
@@ -2053,6 +2165,18 @@ function EmptyState({ text }) {
   );
 }
 
+function LoadingState() {
+  const t = useT();
+  return (
+    <div className="loading-state" role="status" aria-live="polite">
+      <div className="loading-chick"><ChickMark /></div>
+      <h2>{t("loading.title")}</h2>
+      <p>{t("loading.body")}</p>
+      <span className="loading-dots" aria-hidden="true"><i /><i /><i /></span>
+    </div>
+  );
+}
+
 /* --------------------------------- CSS ------------------------------------ */
 
 const CSS = `
@@ -2081,7 +2205,11 @@ const CSS = `
   color: var(--c-ink);
   min-height: 100%;
   width: 100%;
+  caret-color: transparent;
 }
+
+button, select, summary, label { user-select: none; }
+input, textarea { caret-color: auto; user-select: text; }
 
 .pagehead { max-width: 640px; margin-bottom: 22px; }
 .eyebrow {
@@ -2249,6 +2377,24 @@ tr:last-child td { border-bottom: none; }
   display: flex; align-items: center; gap: 8px; justify-content: center;
   padding: 22px; color: var(--c-ink-soft); font-size: 13px;
 }
+.loading-state {
+  min-height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; background: #fff; border-radius: 28px; padding: 36px 24px;
+  box-shadow: 0 2px 16px rgba(17,22,43,0.05);
+}
+.loading-chick {
+  width: 76px; height: 76px; display: grid; place-items: center; border-radius: 24px;
+  background: #EBD3BE; animation: chick-bob 1.4s ease-in-out infinite;
+}
+.loading-chick svg { width: 48px; height: 48px; }
+.loading-state h2 { margin: 22px 0 8px; font-family: 'Fraunces', Georgia, serif; font-size: 28px; }
+.loading-state p { margin: 0; color: var(--c-ink-soft); font-size: 14px; }
+.loading-dots { display: flex; gap: 6px; margin-top: 20px; }
+.loading-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--c-brick); animation: loading-dot 1.2s ease-in-out infinite; }
+.loading-dots i:nth-child(2) { animation-delay: .15s; }
+.loading-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes chick-bob { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+@keyframes loading-dot { 0%, 80%, 100% { opacity: .35; transform: scale(.8); } 40% { opacity: 1; transform: scale(1.15); } }
 
 .predict-panel { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; }
 .predict-form { display: flex; gap: 16px; flex-wrap: wrap; flex: 1; min-width: 260px; }
@@ -2614,6 +2760,10 @@ td { padding: 12px; border-bottom: 1px solid #F0ECE6; }
 .headline-card p { margin: 0; font-size: 19px; line-height: 1.5; font-weight: 600; }
 
 .hero-sentence { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.45; }
+.forecast-alt { display: inline-flex; flex-direction: column; gap: 3px; margin-top: 6px; padding: 10px 14px; border-radius: 10px; background: rgba(17,22,43,0.16); }
+.forecast-alt span { font-size: 12px; font-weight: 700; }
+.forecast-alt b { font-family: 'Fraunces', Georgia, serif; font-size: 30px; line-height: 1; }
+.forecast-alt small { font-size: 11px; opacity: .85; }
 .hero-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 6px; }
 .hero-fact { background: rgba(17,22,43,0.2); border-radius: 18px; padding: 12px 16px; display: flex; flex-direction: column; gap: 3px; }
 .hero-fact small { font-size: 12px; opacity: 0.9; line-height: 1.35; }
@@ -2683,6 +2833,10 @@ td { padding: 12px; border-bottom: 1px solid #F0ECE6; }
 .trust-pill.trust-ok { background: rgba(242,163,58,0.95); color: #11162B; }
 .trust-pill.trust-low { background: rgba(17,22,43,0.4); }
 
+.forecast-period-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.forecast-period-controls .seg { margin-bottom: 0; }
+.forecast-period-input { display: inline-flex; align-items: center; gap: 8px; color: var(--c-ink-soft); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.forecast-period-input input { width: 76px; border: 1px solid #D9D4CC; border-radius: 999px; padding: 10px 12px; background: #fff; color: var(--c-ink); font: inherit; }
 .seg { display: inline-flex; max-width: 100%; overflow-x: auto; background: #fff; border-radius: 999px; padding: 5px; box-shadow: 0 2px 12px rgba(17,22,43,0.06); margin: 0 0 20px; }
 .seg button { border: none; background: transparent; cursor: pointer; font: inherit; font-size: 14.5px; font-weight: 700; color: var(--c-ink-soft); padding: 11px 20px; border-radius: 999px; white-space: nowrap; }
 .seg button.on { background: var(--c-ink); color: #fff; }

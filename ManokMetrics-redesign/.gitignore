@@ -1,3 +1,7 @@
 node_modules/
 dist/
 *.timestamp-*.mjs
+.env
+.env.*
+!.env.example
+!.env.*.example

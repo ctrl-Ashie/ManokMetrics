@@ -1,8 +1,15 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import fs from "node:fs";
 import path from "node:path";
+import {
+  answerAssistant,
+  assistantEnabled,
+  checkRateLimit,
+  getAssistantConfig,
+  isAllowedOrigin,
+} from "./server/assistant-service.mjs";
 
 const importedDirectory = path.resolve("public/data/imported");
 const metadataPath = path.join(importedDirectory, "datasets.json");
@@ -97,69 +104,53 @@ function importedDatasetsApi() {
   };
 }
 
-function assistantApi() {
-  const providerUrl = process.env.AI_API_URL || "";
-  const apiKey = process.env.AI_API_KEY || "";
-  const model = process.env.AI_MODEL || "";
-  const enabled = Boolean(providerUrl && apiKey && model);
+function assistantApi(environment) {
+  const config = getAssistantConfig(environment);
+  const rateLimit = new Map();
   return {
     name: "manokmetrics-assistant-api",
     configureServer(server) {
       server.middlewares.use("/api/assistant", (request, response, next) => {
         response.setHeader("Content-Type", "application/json");
         if (request.method === "GET") {
-          response.end(JSON.stringify({ enabled }));
+          response.end(JSON.stringify({ enabled: assistantEnabled(config) }));
           return;
         }
         if (request.method !== "POST") {
           next();
           return;
         }
-        if (!enabled) {
-          response.statusCode = 503;
-          response.end(JSON.stringify({ message: "The AI assistant is not configured.", code: "CONFIGURATION_MISSING" }));
+        if (!isAllowedOrigin(request.headers.origin, config, request.headers.host)) {
+          response.statusCode = 403;
+          response.end(JSON.stringify({ message: "Request origin is not allowed." }));
+          return;
+        }
+        if (!checkRateLimit(rateLimit, request.socket.remoteAddress || "unknown")) {
+          response.statusCode = 429;
+          response.end(JSON.stringify({ message: "Too many assistant requests. Please try again shortly." }));
           return;
         }
         const chunks = [];
-        request.on("data", chunk => chunks.push(chunk));
+        let size = 0;
+        let tooLarge = false;
+        request.on("data", chunk => {
+          size += chunk.length;
+          if (size <= 128 * 1024) chunks.push(chunk);
+          else tooLarge = true;
+        });
         request.on("end", async () => {
           try {
-            const payload = JSON.parse(Buffer.concat(chunks).toString("utf8"));
-            if (!payload.question || typeof payload.question !== "string" || payload.question.length > 2000) {
-              throw new Error("Please enter a shorter question.");
-            }
-            const language = payload.language === "fil" ? "Filipino" : "English";
-            const context = JSON.stringify(payload.context || {});
-            const history = Array.isArray(payload.messages) ? payload.messages.slice(-8) : [];
-            const system = `You are the ManokMetrics AI Assistant. Answer in ${language} for a beginner audience. Explain the dashboard's existing data; never replace its forecasting engine. Never invent numbers, observations, model metrics, causes, current news, or PSA data. Distinguish observed prices, engine predictions, and user-entered assumptions. If a value is null or absent, say it is unavailable. External-event impacts are assumptions, not verified effects. Historical association is not causation. Use only the supplied dashboard context and conversation. Keep answers concise and readable.`;
-            const providerResponse = await fetch(providerUrl, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-              body: JSON.stringify({
-                model,
-                temperature: 0.2,
-                messages: [
-                  { role: "system", content: system },
-                  { role: "system", content: `Dashboard context (use the latest values only): ${context}` },
-                  ...history.filter(item => item && (item.role === "user" || item.role === "assistant") && typeof item.content === "string"),
-                  { role: "user", content: payload.question },
-                ],
-              }),
-              signal: AbortSignal.timeout(30000),
-            });
-            const providerBody = await providerResponse.json().catch(() => ({}));
-            if (!providerResponse.ok) {
-              response.statusCode = providerResponse.status === 429 ? 429 : 502;
-              response.end(JSON.stringify({ message: providerResponse.status === 429 ? "The AI service is busy. Please try again shortly." : "The AI service could not answer this request." }));
+            if (tooLarge) {
+              response.statusCode = 413;
+              response.end(JSON.stringify({ message: "Request too large." }));
               return;
             }
-            const content = providerBody.choices?.[0]?.message?.content;
-            const answer = Array.isArray(content) ? content.map(part => part?.text || "").join("") : content;
-            if (typeof answer !== "string" || !answer.trim()) throw new Error("The AI service returned an empty answer.");
-            response.end(JSON.stringify({ answer: answer.trim() }));
-          } catch (error) {
-            response.statusCode = error.name === "TimeoutError" ? 504 : 400;
-            response.end(JSON.stringify({ message: error.name === "TimeoutError" ? "The AI service took too long to respond." : "The assistant could not process that request." }));
+            const result = await answerAssistant(JSON.parse(Buffer.concat(chunks).toString("utf8")), config);
+            response.statusCode = result.status;
+            response.end(JSON.stringify(result.body));
+          } catch {
+            response.statusCode = 400;
+            response.end(JSON.stringify({ message: "The assistant could not process that request." }));
           }
         });
       });
@@ -167,10 +158,13 @@ function assistantApi() {
   };
 }
 
-export default defineConfig({
-  plugins: [react(), importedDatasetsApi(), assistantApi(), viteSingleFile()],
-  base: "./",
-  build: {
-    cssCodeSplit: false,
-  },
+export default defineConfig(({ mode }) => {
+  const environment = { ...loadEnv(mode, process.cwd(), ""), ...process.env };
+  return {
+    plugins: [react(), importedDatasetsApi(), assistantApi(environment), viteSingleFile()],
+    base: "./",
+    build: {
+      cssCodeSplit: false,
+    },
+  };
 });

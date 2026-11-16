@@ -69,24 +69,53 @@ To re-run the accuracy test: `npm install` then `node tools/validate-forecast.mj
 
 ## AI Forecast Companion
 
-The optional ManokMetrics AI Assistant appears on the Forecast page. It explains
-the current forecast, observed price trends, model metrics, and user-entered
-events without replacing the existing forecasting engine. Before the first
-request it asks for consent and sends only the question plus a compact summary
-of the selected product, geography, recent observations, forecast output, and
-relevant events. It does not send the full CSV or store conversations remotely.
+The optional ManokMetrics AI Assistant explains forecasts, observed price
+trends, model metrics, and user-entered events without replacing the existing
+forecasting engine. Before the first request it asks for consent and sends only
+the question plus a compact dashboard summary. It never sends the full CSV and
+does not store conversations remotely.
 
-The development server exposes `/api/assistant` as an OpenAI-compatible
-server-side adapter. Configure these server environment variables before
-starting Vite:
+### Local development
 
-- `AI_API_URL` — provider chat-completions URL
-- `AI_API_KEY` — server-side provider key (never use a `VITE_` variable)
-- `AI_MODEL` — provider model name
+1. Copy `.env.example` to `.env.local`.
+2. Replace the placeholders in `.env.local`:
 
-For example, set the variables in the terminal that launches `npm run dev`,
-then open the local URL. The adapter is intentionally disabled when any value
-is missing. A production deployment needs an equivalent server-side function
-for `/api/assistant` with the same environment variables; the standalone HTML
-build cannot securely provide private AI credentials and will leave the
-assistant unavailable unless it is hosted alongside that endpoint.
+   ```text
+   AI_API_URL=YOUR_AI_API_ENDPOINT
+   AI_API_KEY=YOUR_API_KEY
+   AI_MODEL=YOUR_MODEL_NAME
+   AI_ALLOWED_ORIGINS=http://localhost:5173
+   ```
+
+   `AI_API_KEY` is read only by the server-side Vite middleware. Never add a
+   `VITE_` prefix and never put it in React code, `localStorage`, or `public/`.
+3. Start the app with `npm run dev`.
+4. Open `http://localhost:5173/api/assistant` in a browser. A safe response of
+   `{"enabled":true}` confirms configuration without revealing any secret.
+
+`.env.local`, `.env`, and other local environment files are ignored by Git.
+Commit `.env.example` only. If a key is ever pushed to GitHub, revoke or rotate
+it immediately with the provider, remove it from the repository history, and
+replace it with a new private key.
+
+### Production deployment
+
+The Vite development middleware is not included in a static frontend build.
+Deploy the frontend and the included server together:
+
+```bash
+npm run build
+npm run start:server
+```
+
+The production server in `server/index.mjs` serves `dist/` and preserves the
+`/api/assistant` route. Configure `AI_API_URL`, `AI_API_KEY`, `AI_MODEL`, and
+`AI_ALLOWED_ORIGINS` as private environment variables in the hosting
+provider's dashboard or secret store. Do not commit `.env.local` or copy the
+API key into the built HTML.
+
+The server validates request size and questions, applies a per-address request
+limit, checks allowed browser origins, uses a server-side Authorization header,
+and returns sanitized provider errors. Static hosting alone cannot securely
+enable the assistant; it will remain disabled unless a server-side endpoint is
+deployed alongside it.

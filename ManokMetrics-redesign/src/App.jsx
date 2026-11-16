@@ -12,6 +12,7 @@ import {
   Drumstick, Egg, Bird, Wheat, Store, Sun, Compass
 } from "lucide-react";
 import { runForecastEngine, MODEL_IDS } from "./utils/forecast.js";
+import { deleteImportedDataset, getImportedDataset, listImportedDatasets, saveImportedDataset } from "./utils/importedDatasets.js";
 import AssistantPanel from "./components/AssistantPanel.jsx";
 
 const STORAGE_KEY = "poultry:dataset:v2";
@@ -1612,13 +1613,9 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
   const priceSourceDefinitions = SOURCE_DEFS.filter(definition => definition.scale === "price" && (definition.id !== "master" || masterHasRetail));
 
   const refreshImportedDatasets = () => {
-    fetch("/api/imported-datasets")
-      .then(response => {
-        if (!response.ok) throw new Error("The local dataset service is unavailable.");
-        return response.json();
-      })
+    listImportedDatasets()
       .then(setImportedDatasets)
-      .catch(() => setError("Local dataset storage is unavailable. Start ManokMetrics with start.bat or npm run dev."));
+      .catch(storageError => setError(storageError.message));
   };
 
   useEffect(() => {
@@ -1671,23 +1668,16 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
         const csv = ["master", "rawPsa"].includes(processed.report.datasetType)
           ? await file.text()
           : Papa.unparse(outputRows);
-        fetch("/api/imported-datasets", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            filename: file.name,
-            csv,
-            metadata: {
-              datasetType: processed.report.datasetType,
-              geographicCoverage: processed.report.datasetType === "simple" || processed.report.datasetType === "master" ? "dashboard-compatible" : "dataset-specific",
-              recordCount: outputRows.length,
-              preprocessingStatus: processed.report.status,
-              report: processed.report,
-            },
-          }),
-        }).then(response => {
-          if (!response.ok) throw new Error("The local dataset service could not save this file.");
-          return response.json();
+        saveImportedDataset({
+          filename: file.name,
+          csv,
+          metadata: {
+            datasetType: processed.report.datasetType,
+            geographicCoverage: processed.report.datasetType === "simple" || processed.report.datasetType === "master" ? "dashboard-compatible" : "dataset-specific",
+            recordCount: outputRows.length,
+            preprocessingStatus: processed.report.status,
+            report: processed.report,
+          },
         }).then(() => refreshImportedDatasets()).catch(storageError => {
           setError(`Import was validated but not saved: ${storageError.message}`);
           processed.report.status = "Failed persistence";
@@ -1709,10 +1699,10 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
     setSelectedImportedId(id);
     if (!id) return;
     setIsImporting(true);
-    fetch(`/api/imported-datasets/${encodeURIComponent(id)}`)
-      .then(response => {
-        if (!response.ok) throw new Error("The selected dataset file is missing or inaccessible.");
-        return response.text();
+    getImportedDataset(id)
+      .then(record => {
+        if (!record?.csv) throw new Error("The selected dataset file is missing or inaccessible.");
+        return record.csv;
       })
       .then(csv => {
         const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
@@ -1728,9 +1718,8 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
 
   const removeImportedDataset = () => {
     if (!selectedImportedId || !window.confirm("Permanently remove this imported dataset? Bundled datasets will not be affected.")) return;
-    fetch(`/api/imported-datasets/${encodeURIComponent(selectedImportedId)}`, { method: "DELETE" })
-      .then(response => {
-        if (!response.ok) throw new Error("The local dataset service could not delete this file.");
+    deleteImportedDataset(selectedImportedId)
+      .then(() => {
         setSelectedImportedId("");
         refreshImportedDatasets();
       })

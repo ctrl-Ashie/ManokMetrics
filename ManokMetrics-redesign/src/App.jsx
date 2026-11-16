@@ -1029,7 +1029,8 @@ export default function App() {
   const [selectedProductId, setSelectedProductId] = useState("broiler");
   const [geographicScope, setGeographicScope] = useState(DEFAULT_GEOGRAPHIC_SCOPE);
   const [availableGeographies, setAvailableGeographies] = useState({ regions: [], provincesByRegion: {} });
-  const importedDatasetActiveRef = useRef(false);
+  const activeDatasetIdRef = useRef("bundled");
+  const [activeDatasetId, setActiveDatasetId] = useState("bundled");
   const bundledDatasetRef = useRef([]);
 
   // Auto-select inventory source based on product
@@ -1070,9 +1071,8 @@ export default function App() {
     let cancelled = false;
     let backgroundTimer = null;
     const product = PRODUCT_DEFS.find(item => item.id === selectedProductId) || PRODUCT_DEFS[0];
-    importedDatasetActiveRef.current = false;
     setDataStatus("loading");
-    setDataset([]);
+    if (activeDatasetIdRef.current === "bundled") setDataset([]);
     const primaryIds = geographicScope.level === "national" ? ["master"] : ["farmgate-household", "retail"];
     const primaryDefinitions = SOURCE_DEFS.filter(definition => primaryIds.includes(definition.id));
     Promise.all(primaryDefinitions.map(definition => loadBundledSource(definition, product, geographicScope))).then(primaryLoaded => {
@@ -1086,9 +1086,11 @@ export default function App() {
         ? masterRows
         : combineGeographicPriceRows(primarySources);
       bundledDatasetRef.current = nextDataset;
-      if (!importedDatasetActiveRef.current) {
+      if (activeDatasetIdRef.current === "bundled") {
         setDataset(nextDataset);
         setDataStatus(nextDataset.length ? "ready" : "error");
+      } else {
+        setDataStatus(dataset.length ? "ready" : "error");
       }
       if (tab === "data" || tab === "analysis") {
         backgroundTimer = setTimeout(() => {
@@ -1157,7 +1159,7 @@ export default function App() {
   const assistantForecast = assistantRecommendation && assistantEngine?.models?.[assistantRecommendation]?.forecast;
   const assistantFarmgateForecast = modelOutputs?.farmgateEngine?.models?.[modelOutputs?.farmgateEngine?.recommendation]?.forecast;
   const assistantDataInfo = {
-    source: importedDatasetActiveRef.current ? "bundled records plus user-imported records" : "bundled dashboard records",
+    source: activeDatasetId !== "bundled" ? "user-imported records" : "bundled dashboard records",
     dateRange: rows.length ? `${rows[0].periodKey || rows[0].period} to ${rows[rows.length - 1].periodKey || rows[rows.length - 1].period}` : null,
     recordCount: rows.length,
   };
@@ -1252,7 +1254,7 @@ export default function App() {
             {dataStatus === "loading" ? <LoadingState /> : (
               <>
                 {tab === "dashboard" && <Dashboard rows={rows} stats={stats} selectedProductId={selectedProductId} geographicScope={geographicScope} settings={settings} setTab={setTab} modelOutputs={modelOutputs} />}
-                {tab === "data" && <DataTab rows={rows} setDataset={setDataset} activateImportedDataset={importedRows => { importedDatasetActiveRef.current = true; setDataset(mergeDashboardRows(bundledDatasetRef.current, importedRows)); }} sources={sources} activePriceSourceId={activePriceSourceId} setActivePriceSourceId={setActivePriceSourceId} comparePriceIds={comparePriceIds} setComparePriceIds={comparePriceIds} activeInventorySourceId={activeInventorySourceId} setActiveInventorySourceId={setActiveInventorySourceId} compareInventoryIds={compareInventoryIds} setCompareInventoryIds={compareInventoryIds} activeVolumeSourceId={activeVolumeSourceId} setActiveVolumeSourceId={activeVolumeSourceId} compareVolumeIds={compareVolumeIds} setCompareVolumeIds={compareVolumeIds} selectedProductId={selectedProductId} setSelectedProductId={setSelectedProductId} geographicScope={geographicScope} setGeographicScope={setGeographicScope} availableGeographies={availableGeographies} />}
+                {tab === "data" && <DataTab rows={rows} setDataset={setDataset} activeDatasetId={activeDatasetId} activateImportedDataset={(id, importedRows) => { activeDatasetIdRef.current = id; setActiveDatasetId(id); setDataset(importedRows); }} activateBundledDataset={() => { activeDatasetIdRef.current = "bundled"; setActiveDatasetId("bundled"); setDataset(bundledDatasetRef.current); }} sources={sources} activePriceSourceId={activePriceSourceId} setActivePriceSourceId={setActivePriceSourceId} comparePriceIds={comparePriceIds} setComparePriceIds={comparePriceIds} activeInventorySourceId={activeInventorySourceId} setActiveInventorySourceId={setActiveInventorySourceId} compareInventoryIds={compareInventoryIds} setCompareInventoryIds={compareInventoryIds} activeVolumeSourceId={activeVolumeSourceId} setActiveVolumeSourceId={activeVolumeSourceId} compareVolumeIds={compareVolumeIds} setCompareVolumeIds={compareVolumeIds} selectedProductId={selectedProductId} setSelectedProductId={setSelectedProductId} geographicScope={geographicScope} setGeographicScope={setGeographicScope} availableGeographies={availableGeographies} />}
                 {tab === "analysis" && <AnalysisTab rows={rows} productionRows={sources.production?.rows || []} inventoryRows={sources[activeInventorySourceId]?.rows || []} selectedProductId={selectedProductId} geographicScope={geographicScope} />}
                 {tab === "predict" && <PredictTab settings={settings} rows={rows} modelOutputs={modelOutputs} sources={sources} selectedProductId={selectedProductId} events={events} setEvents={setEvents} geographicScope={geographicScope} availableGeographies={availableGeographies} />}
                 {tab === "settings" && <SettingsTab settings={settings} setSettings={setSettings} rows={rows} />}
@@ -1604,7 +1606,7 @@ function KPI({ label, value, tone, level, delta, note }) {
 
 /* ------------------------------- Data tab -------------------------------- */
 
-function DataTab({ rows, setDataset, activateImportedDataset, sources, activePriceSourceId, setActivePriceSourceId, comparePriceIds, setComparePriceIds, activeInventorySourceId, setActiveInventorySourceId, compareInventoryIds, setCompareInventoryIds, activeVolumeSourceId, setActiveVolumeSourceId, compareVolumeIds, setCompareVolumeIds, selectedProductId, setSelectedProductId, geographicScope, setGeographicScope, availableGeographies }) {
+function DataTab({ rows, setDataset, activeDatasetId, activateImportedDataset, activateBundledDataset, sources, activePriceSourceId, setActivePriceSourceId, comparePriceIds, setComparePriceIds, activeInventorySourceId, setActiveInventorySourceId, compareInventoryIds, setCompareInventoryIds, activeVolumeSourceId, setActiveVolumeSourceId, compareVolumeIds, setCompareVolumeIds, selectedProductId, setSelectedProductId, geographicScope, setGeographicScope, availableGeographies }) {
   const t = useT();
   const fileRef = useRef(null);
   const [form, setForm] = useState({ period: "", farmgate: "", retail: "" });
@@ -1612,7 +1614,7 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
   const [importReport, setImportReport] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importedDatasets, setImportedDatasets] = useState([]);
-  const [selectedImportedId, setSelectedImportedId] = useState("");
+  const [selectedImportedId, setSelectedImportedId] = useState(activeDatasetId === "bundled" ? "" : activeDatasetId);
   const masterHasRetail = sources.master?.rows?.some(row => row.retail !== null && row.retail !== undefined && Number.isFinite(Number(row.retail)));
   const priceSourceDefinitions = SOURCE_DEFS.filter(definition => definition.scale === "price" && (definition.id !== "master" || masterHasRetail));
 
@@ -1625,6 +1627,10 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
   useEffect(() => {
     refreshImportedDatasets();
   }, []);
+
+  useEffect(() => {
+    setSelectedImportedId(activeDatasetId === "bundled" ? "" : activeDatasetId);
+  }, [activeDatasetId]);
 
   const addRow = (e) => {
     e.preventDefault();
@@ -1654,40 +1660,50 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
       skipEmptyLines: true,
       worker: true,
       complete: async (results) => {
+        try {
         const processed = processCsvImport(results.data, file.name);
         setImportReport(processed.report);
         if (results.errors?.length) {
           processed.report.status = "Rejected";
           processed.report.reasons = [...processed.report.reasons, "The CSV parser found malformed rows."];
+          setImportReport({ ...processed.report });
+          setError("The CSV contains malformed rows. Fix the reported CSV errors and try importing it again.");
+          setIsImporting(false);
+          return;
         }
         if (!processed.rows.length && !processed.records.length) {
           setError(processed.report.reasons[0] || "The uploaded CSV contains no usable dashboard records.");
           setIsImporting(false);
           return;
-        } else {
-          if (processed.rows.length) activateImportedDataset(processed.rows);
-          setError("");
         }
         const outputRows = processed.records.length ? processed.records : processed.rows;
         const csv = ["master", "rawPsa"].includes(processed.report.datasetType)
           ? await file.text()
           : Papa.unparse(outputRows);
-        saveImportedDataset({
+        const saved = await saveImportedDataset({
           filename: file.name,
           csv,
           metadata: {
             datasetType: processed.report.datasetType,
+            dashboardCompatible: processed.rows.length > 0,
             geographicCoverage: processed.report.datasetType === "simple" || processed.report.datasetType === "master" ? "dashboard-compatible" : "dataset-specific",
             recordCount: outputRows.length,
             preprocessingStatus: processed.report.status,
             report: processed.report,
           },
-        }).then(() => refreshImportedDatasets()).catch(storageError => {
-          setError(`Import was validated but not saved: ${storageError.message}`);
-          processed.report.status = "Failed persistence";
-          setImportReport({ ...processed.report });
         });
+        if (processed.rows.length) {
+          setSelectedImportedId(saved.id);
+          activateImportedDataset(saved.id, processed.rows);
+        }
+        setError("");
+        refreshImportedDatasets();
+      } catch (storageError) {
+        setError(`Import was validated but not saved: ${storageError.message}`);
+        setImportReport(current => ({ ...current, status: "Failed persistence" }));
+      } finally {
         setIsImporting(false);
+        }
       },
       error: parseError => {
         setIsImporting(false);
@@ -1713,18 +1729,19 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
         const processed = processCsvImport(parsed.data, id);
         setImportReport(processed.report);
         if (!processed.rows.length) throw new Error("This dataset is not compatible with the dashboard view.");
-        activateImportedDataset(processed.rows);
+        activateImportedDataset(id, processed.rows);
         setError("");
       })
       .catch(loadError => setError(`Dataset could not be loaded: ${loadError.message}`))
       .finally(() => setIsImporting(false));
   };
 
-  const removeImportedDataset = () => {
-    if (!selectedImportedId || !window.confirm("Permanently remove this imported dataset? Bundled datasets will not be affected.")) return;
-    deleteImportedDataset(selectedImportedId)
+  const removeImportedDataset = (datasetId = selectedImportedId) => {
+    if (!datasetId || !window.confirm("Permanently remove this imported dataset? Bundled datasets will not be affected.")) return;
+    deleteImportedDataset(datasetId)
       .then(() => {
         setSelectedImportedId("");
+        if (datasetId === activeDatasetId) activateBundledDataset();
         refreshImportedDatasets();
       })
       .catch(deleteError => setError(`Dataset could not be removed: ${deleteError.message}`));
@@ -1852,16 +1869,65 @@ function DataTab({ rows, setDataset, activateImportedDataset, sources, activePri
           <h3>Import / export</h3>
           <span className="panel-tag">PSA master CSV or period, farmgate, retail</span>
         </div>
-        <p className="panel-help">Use this only when you have another CSV. The built-in files are already available in the explorer above.</p>
+        <p className="panel-help">Import a CSV to keep it in this browser, switch between saved datasets, or export the currently active records.</p>
         <div className="import-row">
           <button className="btn btn-primary" onClick={() => fileRef.current?.click()}>
             <Upload size={15} /> Import CSV
           </button>
           <input ref={fileRef} type="file" accept=".csv" hidden onChange={handleFile} />
           <button className="btn btn-ghost" onClick={exportCsv}>
-            <Download size={15} /> Export current data
+            <Download size={15} /> Export active data
           </button>
         </div>
+        {isImporting && <p className="panel-help" role="status">Loading dataset...</p>}
+        {importReport && (
+          <div className={`import-report ${importReport.status === "Rejected" || importReport.status === "Failed persistence" ? "import-report-error" : ""}`} role="status">
+            <strong>{importReport.filename}</strong>
+            <span>{importReport.status} {importReport.datasetType ? `· ${formatDatasetType(importReport.datasetType)}` : ""}</span>
+            <div className="report-grid">
+              <span>Accepted <b>{importReport.validRecords ?? 0}</b></span>
+              <span>Rejected <b>{importReport.rejectedRecords ?? 0}</b></span>
+              <span>Warnings <b>{importReport.warnings?.length ?? 0}</b></span>
+            </div>
+            {(importReport.reasons?.length || importReport.warnings?.length) ? (
+              <div className="report-audit">
+                {[...(importReport.reasons || []), ...(importReport.warnings || [])].map(message => <span key={message}>{message}</span>)}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+
+      <div className="panel dataset-manager">
+        <div className="panel-head">
+          <div><h3>Saved datasets</h3><p className="panel-help">Datasets stay on this device. The active dataset powers the dashboard, charts, filters, and assistant.</p></div>
+          <span className="panel-tag">{importedDatasets.length} saved</span>
+        </div>
+        <div className={`dataset-item ${activeDatasetId === "bundled" ? "active" : ""}`}>
+          <div className="dataset-info">
+            <div className="dataset-title"><Database size={16} /> Built-in PSA dataset {activeDatasetId === "bundled" && <span className="dataset-active">Active</span>}</div>
+            <span className="dataset-meta">Always available · bundled records</span>
+          </div>
+          <button className="btn btn-ghost" disabled={activeDatasetId === "bundled"} onClick={activateBundledDataset}>{activeDatasetId === "bundled" ? "Using this dataset" : "Use built-in"}</button>
+        </div>
+        {importedDatasets.length === 0 ? (
+          <div className="dataset-empty"><Database size={20} /><span>No imported datasets yet. Choose <b>Import CSV</b> above to add one.</span></div>
+        ) : importedDatasets.map(dataset => {
+          const isActive = activeDatasetId === dataset.id;
+          return (
+            <div className={`dataset-item ${isActive ? "active" : ""}`} key={dataset.id}>
+              <div className="dataset-info">
+                <div className="dataset-title"><Database size={16} /> {dataset.originalFilename} {isActive && <span className="dataset-active">Active</span>}</div>
+                <span className="dataset-meta">{Number(dataset.recordCount || 0).toLocaleString()} records · {dataset.storedAt ? new Date(dataset.storedAt).toLocaleString() : "date unavailable"}</span>
+                <span className="dataset-meta">{dataset.preprocessingStatus || "Imported"}{dataset.dashboardCompatible === false ? " · Not dashboard-compatible" : ""}{dataset.report?.warnings?.length ? ` · ${dataset.report.warnings.length} warning(s)` : ""}</span>
+              </div>
+              <div className="dataset-actions">
+                <button className="btn btn-ghost" disabled={isActive || dataset.dashboardCompatible === false} onClick={() => selectImportedDataset({ target: { value: dataset.id } })}>{isActive ? "Using this dataset" : dataset.dashboardCompatible === false ? "Unavailable" : "Use dataset"}</button>
+                <button className="btn btn-danger-ghost" onClick={() => removeImportedDataset(dataset.id)} aria-label={`Remove ${dataset.originalFilename}`}><Trash2 size={15} /> Remove</button>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="panel">
@@ -2528,6 +2594,7 @@ input, textarea { caret-color: auto; user-select: text; }
 .pagehead p { font-size: 14px; color: var(--c-ink-soft); line-height: 1.5; margin: 0; }
 .panel-help { color: var(--c-ink-soft); font-size: 12px; line-height: 1.4; margin: 4px 0 0; }
 .import-report { display: grid; gap: 8px; margin-top: 14px; padding: 12px; background: #f5f8f3; border: 1px solid var(--c-line); border-radius: 8px; font-size: 12px; }
+.import-report-error { background: #fff4f1; border-color: #efc5bc; color: var(--c-brick); }
 .report-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; color: var(--c-ink-soft); }
 .report-grid span, .report-audit span { display: flex; justify-content: space-between; gap: 8px; }
 .report-grid b, .report-audit b { color: var(--c-ink); font-family: 'DM Sans', system-ui, sans-serif; }
@@ -2621,6 +2688,15 @@ input, textarea { caret-color: auto; user-select: text; }
 .levelbar-count { width: 20px; text-align: right; font-family: 'DM Sans', system-ui, sans-serif; font-size: 12px; color: var(--c-ink-soft); }
 
 .import-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.dataset-manager { display: grid; gap: 10px; }
+.dataset-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 14px; border: 1px solid var(--c-line); border-radius: 12px; }
+.dataset-item.active { border-color: #9dcfc3; background: #f3faf7; box-shadow: inset 3px 0 var(--c-teal); }
+.dataset-info { min-width: 0; display: grid; gap: 4px; }
+.dataset-title { display: flex; align-items: center; gap: 7px; font-weight: 700; font-size: 13px; overflow-wrap: anywhere; }
+.dataset-meta { color: var(--c-ink-soft); font-size: 11.5px; line-height: 1.35; }
+.dataset-active { display: inline-flex; padding: 3px 8px; border-radius: 999px; background: var(--c-teal); color: #fff; font-size: 10px; letter-spacing: .03em; text-transform: uppercase; }
+.dataset-actions { display: flex; gap: 7px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.dataset-empty { display: flex; align-items: center; gap: 10px; padding: 18px; border: 1px dashed var(--c-line); border-radius: 12px; color: var(--c-ink-soft); font-size: 13px; }
 .btn {
   display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
   border-radius: 8px; padding: 9px 15px; font-size: 13px; font-weight: 600;
@@ -3288,6 +3364,8 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
   .event-form-wide { grid-column: auto; }
   .event-item { flex-direction: column; }
   .report-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dataset-item { align-items: flex-start; flex-direction: column; }
+  .dataset-actions { justify-content: flex-start; }
   .card, .panel { padding: 20px 18px; border-radius: 24px; }
   details.fold > summary { padding: 18px; }
   details.fold > :not(summary) { margin-left: 18px; margin-right: 18px; }

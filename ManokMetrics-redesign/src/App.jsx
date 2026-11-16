@@ -12,6 +12,7 @@ import {
   Drumstick, Egg, Bird, Wheat, Store, Sun, Compass
 } from "lucide-react";
 import { runForecastEngine, MODEL_IDS } from "./utils/forecast.js";
+import AssistantPanel from "./components/AssistantPanel.jsx";
 
 const STORAGE_KEY = "poultry:dataset:v2";
 const SETTINGS_KEY = "poultry:settings";
@@ -181,6 +182,7 @@ const STRINGS = {
     "fc.adv.col1": "Method", "fc.adv.col2": "Usual miss", "fc.adv.col3": "Percent miss",
     "fc.whatif": "What if the farm price is different?", "fc.whatif.body": "Type a farm price to see how the guess changes. It starts at the latest farm price ({x}).", "fc.whatif.apply": "Apply", "fc.whatif.reset": "Back to latest",
     "fc.how2.body": "We look at how the market price changed in recent months and how farm prices changed. Then we predict how much the market price will change. We test several methods on past months and use the most accurate one.", "fc.how2.farm": "We look at how the farmgate price changed in recent months. Then we predict how much the farmgate price will change. We test several methods on past months and use the most accurate one.",
+    "ai.title": "ManokMetrics AI Assistant", "ai.subtitle": "A friendly guide to the numbers on this page", "ai.intro": "Ask about the forecast, recent trends, model results, or the difference between farmgate and market prices.", "ai.consent": "This optional assistant sends your question and a small summary of this dashboard to an external AI service. It does not send your CSV file or full history. Do you agree?", "ai.allow": "Allow and continue", "ai.decline": "Not now", "ai.disabled": "The assistant is unavailable because its secure server connection is not configured. The dashboard still works normally.", "ai.declined": "The assistant is turned off. Your dashboard continues to work normally.", "ai.enable": "Enable it", "ai.loading": "Thinking...", "ai.placeholder": "Ask a question about this forecast...", "ai.send": "Send", "ai.new": "New conversation", "ai.privacy": "Only a compact dashboard summary is sent with each question.", "ai.error.unavailable": "I couldn't get an answer right now. Please try again later.", "ai.suggest.forecast": "Explain my current forecast.", "ai.suggest.reliable": "How reliable is this prediction?", "ai.suggest.difference": "Why are farmgate and market prices different?", "ai.suggest.metrics": "What do the model accuracy numbers mean?", "ai.suggest.trend": "Explain the recent price trend.",
     "model2.naive": "Repeat last price", "model2.linear": "Farm-link (linear)", "model2.arima": "Recent trend (ARIMA 2,1,0)", "model2.xgboost": "Boosted stumps (XGBoost-style)", "model2.randomForest": "Random forest",
     "an.hint": "A longer bar means the two move together more often.",
     "data.recent": "Recent months", "data.col.month": "Month", "data.more": "More tools: compare sources, charts, import your own data",
@@ -326,6 +328,7 @@ const STRINGS = {
     "fc.adv.col1": "Pamamaraan", "fc.adv.col2": "Karaniwang mali", "fc.adv.col3": "Porsyentong mali",
     "fc.whatif": "Paano kung iba ang presyo sa bukid?", "fc.whatif.body": "Maglagay ng presyo sa bukid para makita kung paano nagbabago ang hula. Nagsisimula ito sa pinakabagong presyo sa bukid ({x}).", "fc.whatif.apply": "Ilapat", "fc.whatif.reset": "Bumalik sa pinakabago",
     "fc.how2.body": "Tinitingnan namin kung paano nagbago ang presyo sa palengke nitong mga nakaraang buwan at kung paano nagbago ang presyo sa bukid. Pagkatapos, hinuhulaan namin kung gaano magbabago ang presyo sa palengke. Sinusubukan namin ang ilang pamamaraan sa mga nakaraang buwan at ginagamit ang pinakatumpak.", "fc.how2.farm": "Tinitingnan namin kung paano nagbago ang presyo sa bukid nitong mga nakaraang buwan. Pagkatapos, hinuhulaan namin kung gaano magbabago ang presyo sa bukid. Sinusubukan namin ang ilang pamamaraan sa mga nakaraang buwan at ginagamit ang pinakatumpak.",
+    "ai.title": "ManokMetrics AI Assistant", "ai.subtitle": "Madaling gabay sa mga numerong nasa pahinang ito", "ai.intro": "Magtanong tungkol sa hula, kamakailang galaw, resulta ng modelo, o pagkakaiba ng presyo sa bukid at palengke.", "ai.consent": "Opsyonal ang assistant na ito. Ipinapadala nito ang tanong mo at maikling buod ng dashboard sa isang external AI service. Hindi nito ipinapadala ang CSV o buong kasaysayan. Sumasang-ayon ka ba?", "ai.allow": "Payagan at magpatuloy", "ai.decline": "Hindi muna", "ai.disabled": "Hindi magagamit ang assistant dahil hindi naka-configure ang ligtas na koneksyon sa server. Patuloy na gagana nang normal ang dashboard.", "ai.declined": "Naka-off ang assistant. Patuloy na gagana nang normal ang dashboard.", "ai.enable": "I-on ito", "ai.loading": "Nag-iisip...", "ai.placeholder": "Magtanong tungkol sa hulang ito...", "ai.send": "Ipadala", "ai.new": "Bagong usapan", "ai.privacy": "Maikling buod lamang ng dashboard ang ipinapadala sa bawat tanong.", "ai.error.unavailable": "Hindi ako makasagot ngayon. Subukan muli mamaya.", "ai.suggest.forecast": "Ipaliwanag ang kasalukuyan kong hula.", "ai.suggest.reliable": "Gaano katiyak ang hulang ito?", "ai.suggest.difference": "Bakit magkaiba ang presyo sa bukid at palengke?", "ai.suggest.metrics": "Ano ang ibig sabihin ng mga numero ng katumpakan?", "ai.suggest.trend": "Ipaliwanag ang kamakailang galaw ng presyo.",
     "model2.naive": "Ulitin ang huling presyo", "model2.linear": "Farm-link (linear)", "model2.arima": "Kamakailang galaw (ARIMA 2,1,0)", "model2.xgboost": "Boosted stumps (XGBoost-style)", "model2.randomForest": "Random forest",
     "an.hint": "Mas mahabang bar, mas madalas silang sabay gumalaw.",
     "data.recent": "Mga huling buwan", "data.col.month": "Buwan", "data.more": "Iba pang kasangkapan: ihambing ang mga source, mga tsart, mag-import ng sariling data",
@@ -1984,6 +1987,22 @@ function PredictTab({ settings, rows, modelOutputs, sources, selectedProductId, 
             {farmOverride !== null && <p className="hero-note">{t("fc.whatif.note", { x: fmtPHP(farmOverride) })}</p>}
           </section>
 
+          <AssistantPanel
+            t={t}
+            lang={t.lang}
+            product={product}
+            scope={scopeText}
+            unit={product.unit}
+            rows={forecastUsesFarmgate ? farmgateRows : forecastRows}
+            engine={engine}
+            recommendation={recId}
+            events={events}
+            farmOverride={farmOverride}
+            horizon={periodsAhead}
+            predictedMarket={forecastUsesFarmgate ? null : predicted}
+            predictedFarmgate={farmgatePredicted}
+          />
+
           {rec && naive && (
             <section className="card reliability-simple" data-tour="fc-reliability">
               <h3>{t("fc.rel2.title")}</h3>
@@ -3095,6 +3114,41 @@ details.fold > .fold-inner { margin-left: 18px; margin-right: 18px; }
 details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 
 .gap-explain { margin: 4px 0 16px; font-size: 14.5px; line-height: 1.55; color: #D8DBE6; }
+.assistant-panel { padding: 0; overflow: hidden; margin-bottom: 22px; }
+.assistant-summary { width: 100%; border: 0; background: transparent; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; color: var(--c-ink); text-align: left; }
+.assistant-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.assistant-title > span:last-child { display: flex; flex-direction: column; gap: 2px; }
+.assistant-title b { font-size: 16px; }
+.assistant-title small { color: var(--c-ink-soft); font-size: 12.5px; }
+.assistant-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; background: #DDF1EA; color: var(--c-teal); flex-shrink: 0; }
+.assistant-toggle { display: grid; place-items: center; color: var(--c-brick); }
+.assistant-body { border-top: 1px solid #F0ECE6; padding: 18px 22px 20px; }
+.assistant-intro { margin: 0 0 14px; color: var(--c-ink-soft); font-size: 14px; line-height: 1.5; }
+.assistant-notice, .assistant-consent { background: #FFF6E6; border: 1px solid #F3DDB4; border-radius: 14px; padding: 12px 14px; color: var(--c-ink-soft); font-size: 13px; line-height: 1.5; }
+.assistant-notice { display: flex; align-items: center; gap: 8px; }
+.assistant-consent p { margin: 0 0 12px; }
+.assistant-consent > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.assistant-messages { display: grid; gap: 10px; max-height: 360px; overflow-y: auto; padding: 4px 2px 12px; }
+.assistant-message { max-width: 88%; padding: 11px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.assistant-message p { margin: 0 0 8px; }
+.assistant-message p:last-child { margin-bottom: 0; }
+.assistant-message.user { justify-self: end; background: var(--c-ink); color: #fff; border-bottom-right-radius: 5px; }
+.assistant-message.assistant { justify-self: start; background: #F7F4F0; color: var(--c-ink); border-bottom-left-radius: 5px; }
+.assistant-message.loading { display: inline-flex; align-items: center; gap: 8px; }
+.assistant-suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+.assistant-suggestions button { border: 1px solid var(--c-line); border-radius: 999px; background: #fff; color: var(--c-ink); padding: 8px 12px; font: inherit; font-size: 12.5px; cursor: pointer; text-align: left; }
+.assistant-suggestions button:hover:not(:disabled) { border-color: var(--c-brick); background: #FFF6E6; }
+.assistant-suggestions button:disabled { opacity: .55; cursor: not-allowed; }
+.assistant-form { display: flex; align-items: flex-end; gap: 10px; }
+.assistant-form textarea { flex: 1; min-width: 0; resize: vertical; border: 1.5px solid var(--c-line); border-radius: 14px; padding: 11px 13px; background: #FBF9F6; font: inherit; line-height: 1.4; }
+.assistant-send { min-height: 44px; padding-inline: 16px; }
+.assistant-send:disabled { opacity: .55; cursor: not-allowed; }
+.assistant-error { margin: 0 0 10px; color: #B23E2A; font-size: 13px; }
+.assistant-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; color: var(--c-ink-soft); }
+.assistant-footer small { font-size: 11.5px; }
+.link-button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: var(--c-brick); cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 700; padding: 3px; }
+.spin { animation: assistant-spin .9s linear infinite; }
+@keyframes assistant-spin { to { transform: rotate(360deg); } }
 /* ---------------- responsive ---------------- */
 @media (max-width: 1180px) {
   .hero-row { grid-template-columns: 1fr; }
@@ -3141,6 +3195,8 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 }
 @media (max-width: 560px) {
   .kpis, .action-cards { grid-template-columns: 1fr; }
+  .assistant-form { flex-direction: column; align-items: stretch; }
+  .assistant-send { align-self: flex-end; }
 }
 /* ---- Guided tour ---- */
 .tour-btn { display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px; border: none; border-radius: 999px; background: #fff; color: var(--c-ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 0 var(--c-line); }

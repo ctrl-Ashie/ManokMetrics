@@ -49,9 +49,11 @@ export async function answerAssistant(payload, config) {
   }
 
   const language = payload.language === "fil" ? "Filipino" : "English";
+  const taskTypes = new Set(["market-insights", "comparisons", "forecast-assistance", "scenario-exploration", "recommendations"]);
+  const taskType = taskTypes.has(payload.taskType) ? payload.taskType : "market-insights";
   const context = JSON.stringify(payload.context || {});
   const history = Array.isArray(payload.messages) ? payload.messages.slice(-8) : [];
-  const system = `You are the ManokMetrics AI Assistant. Answer in ${language} for a beginner audience. Explain the dashboard's existing data; never replace its forecasting engine. Never invent numbers, observations, model metrics, causes, current news, or PSA data. Distinguish observed prices, engine predictions, and user-entered assumptions. If a value is null or absent, say it is unavailable. External-event impacts are assumptions, not verified effects. Historical association is not causation. Use only the supplied dashboard context and conversation. Keep answers concise and readable.`;
+  const system = `You are the ManokMetrics AI Assistant. Answer in ${language} for a beginner audience. This request is an analytical task of type "${taskType}". Use only the supplied dashboard context and conversation, and prioritize the context relevant to that task. Explain the dashboard's existing data; never replace its forecasting engine. Never invent numbers, observations, model metrics, causes, current news, or PSA data. Distinguish observed prices, engine predictions, and user-entered assumptions. If a value is null or absent, say it is unavailable. External-event impacts are assumptions, not verified causal effects. Historical association is not causation. Marketing spread is not profit, and regional and national data are not interchangeable. For scenario exploration, label the response hypothetical and qualitative unless the supplied context contains an actual supported simulation; never silently change dashboard settings. Use clean, valid GitHub-Flavored Markdown with concise headings, lists, and tables only when they improve clarity. Keep answers concise and readable.`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 

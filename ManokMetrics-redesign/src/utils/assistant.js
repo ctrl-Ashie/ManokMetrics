@@ -31,6 +31,7 @@ export function buildAssistantContext({
   analysis = null,
   dataInfo = null,
   settings = null,
+  taskType = null,
 }) {
   const recentRows = (rows || []).slice(-12).map(row => ({
     period: row.periodKey || row.period,
@@ -57,6 +58,7 @@ export function buildAssistantContext({
     page,
     product: { name: product.name, id: product.id, unit },
     geography: scope,
+    taskType,
     dataRules: [
       "Prices marked as observed come from the loaded dashboard records.",
       "Forecast values are predictions from the existing forecasting engine, not observations.",

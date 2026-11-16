@@ -1,18 +1,29 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { BarChart3, Bot, Check, Compass, Lightbulb, LineChart, LoaderCircle, RotateCcw, Send, ShieldAlert, Store, TrendingUp, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { buildAssistantContext } from "../utils/assistant.js";
 
 const CONSENT_KEY = "manok-ai-consent-v1";
 
+function isSafeLink(url) {
+  return /^(https?:)?\/\//i.test(url || "");
+}
+
 function renderMessage(text) {
-const lines = String(text).split(/\r?\n/);
-return lines.map((line, index) => {
-  const heading = line.match(/^(?:#{1,4}\s*)?\*{0,2}([^:*]+):\*{0,2}\s*(.*)$/);
-  if (heading) return <div className="assistant-section" key={`${index}-${line}`}><h4>{heading[1]}</h4>{heading[2] && <p>{heading[2]}</p>}</div>;
-  if (/^\s*[-*]\s+/.test(line)) return <div className="assistant-bullet" key={`${index}-${line}`}>• {line.replace(/^\s*[-*]\s+/, "")}</div>;
-  if (!line.trim()) return <span className="assistant-break" key={`${index}-break`} />;
-  return <p key={`${index}-${line.slice(0, 12)}`}>{line}</p>;
-});
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        a: ({ href, children, ...props }) => isSafeLink(href)
+          ? <a {...props} href={href} target="_blank" rel="noopener noreferrer">{children}</a>
+          : <span>{children}</span>,
+        table: ({ children }) => <div className="assistant-table-wrap"><table>{children}</table></div>,
+      }}
+    >
+      {String(text)}
+    </ReactMarkdown>
+  );
 }
 
 export default function AssistantPanel({
@@ -29,14 +40,15 @@ export default function AssistantPanel({
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [taskType, setTaskType] = useState(null);
   const inputRef = useRef(null);
   const messagesRef = useRef(null);
   const buttonRef = useRef(null);
 
   const context = useMemo(() => buildAssistantContext({
     page, product, scope, unit, rows, engine, recommendation, events, farmOverride,
-    horizon, language: lang, predictedMarket, predictedFarmgate, stats, analysis, dataInfo, settings,
-  }), [page, product, scope, unit, rows, engine, recommendation, events, farmOverride, horizon, lang, predictedMarket, predictedFarmgate, stats, analysis, dataInfo, settings]);
+    horizon, language: lang, predictedMarket, predictedFarmgate, stats, analysis, dataInfo, settings, taskType,
+  }), [page, product, scope, unit, rows, engine, recommendation, events, farmOverride, horizon, lang, predictedMarket, predictedFarmgate, stats, analysis, dataInfo, settings, taskType]);
 
   useEffect(() => {
     let active = true;
@@ -66,34 +78,34 @@ export default function AssistantPanel({
 
   const tasksByPage = {
     dashboard: [
-      ["ai.task.conditions", Store, "conditions"],
-      ["ai.task.movements", TrendingUp, "movements"],
-      ["ai.task.compare", BarChart3, "compare"],
+      ["ai.task.conditions", Store, "conditions", "market-insights"],
+      ["ai.task.movements", TrendingUp, "movements", "market-insights"],
+      ["ai.task.compare", BarChart3, "compare", "comparisons"],
     ],
     predict: [
-      ["ai.task.forecast", LineChart, "forecast"],
-      ["ai.task.reliability", Compass, "reliability"],
-      ["ai.task.recommendations", Lightbulb, "recommendations"],
+      ["ai.task.forecast", LineChart, "forecast", "forecast-assistance"],
+      ["ai.task.reliability", Compass, "reliability", "forecast-assistance"],
+      ["ai.task.recommendations", Lightbulb, "recommendations", "recommendations"],
     ],
     analysis: [
-      ["ai.task.patterns", TrendingUp, "patterns"],
-      ["ai.task.indicators", BarChart3, "indicators"],
-      ["ai.task.correlation", Compass, "correlation"],
+      ["ai.task.patterns", TrendingUp, "patterns", "market-insights"],
+      ["ai.task.indicators", BarChart3, "indicators", "comparisons"],
+      ["ai.task.correlation", Compass, "correlation", "market-insights"],
     ],
     data: [
-      ["ai.task.records", Store, "records"],
-      ["ai.task.trends", TrendingUp, "trends"],
-      ["ai.task.unusual", Lightbulb, "unusual"],
+      ["ai.task.records", Store, "records", "market-insights"],
+      ["ai.task.trends", TrendingUp, "trends", "market-insights"],
+      ["ai.task.unusual", Lightbulb, "unusual", "market-insights"],
     ],
     settings: [
-      ["ai.task.settings", Compass, "settings"],
-      ["ai.task.models", LineChart, "models"],
-      ["ai.task.changes", Lightbulb, "changes"],
+      ["ai.task.settings", Compass, "settings", "forecast-assistance"],
+      ["ai.task.models", LineChart, "models", "forecast-assistance"],
+      ["ai.task.changes", Lightbulb, "changes", "scenario-exploration"],
     ],
     faq: [
-      ["ai.task.using", Compass, "using"],
-      ["ai.task.features", BarChart3, "features"],
-      ["ai.task.sources", Store, "sources"],
+      ["ai.task.using", Compass, "using", "recommendations"],
+      ["ai.task.features", BarChart3, "features", "recommendations"],
+      ["ai.task.sources", Store, "sources", "market-insights"],
     ],
   };
   const tasks = tasksByPage[page] || tasksByPage.dashboard;
@@ -103,7 +115,7 @@ export default function AssistantPanel({
     try { window.localStorage.setItem(CONSENT_KEY, value ? "accepted" : "declined"); } catch { /* optional preference */ }
   };
 
-  const send = async value => {
+  const send = async (value, selectedTaskType = taskType) => {
     const text = String(value ?? question).trim();
     if (!text || loading || consent !== "accepted") return;
     setShowTasks(false);
@@ -115,7 +127,7 @@ export default function AssistantPanel({
       const response = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ question: text, language: lang, context, messages: messages.slice(-8) }),
+        body: JSON.stringify({ question: text, language: lang, taskType: selectedTaskType, context, messages: messages.slice(-8) }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || typeof result.answer !== "string" || !result.answer.trim()) {
@@ -132,9 +144,10 @@ export default function AssistantPanel({
   const [showTasks, setShowTasks] = useState(true);
   const selectTask = task => {
     const title = t(`ai.task.${task.key}`);
-    send(`${title}\n\n${t(`ai.task.${task.key}.prompt`)} ${t("ai.structured")}`);
+    setTaskType(task.type);
+    send(`${title}\n\n${t(`ai.task.${task.key}.prompt`)} ${t("ai.structured")}`, task.type);
   };
-  const reset = () => { setMessages([]); setQuestion(""); setError(""); setShowTasks(true); };
+  const reset = () => { setMessages([]); setQuestion(""); setError(""); setTaskType(null); setShowTasks(true); };
   if (!visible) return null;
 
   return (
@@ -153,8 +166,8 @@ export default function AssistantPanel({
             {consent === "accepted" && (
               <>
                 <div className="assistant-messages" ref={messagesRef} aria-live="polite">
-                  {(showTasks || !messages.length) && <div className="assistant-guided"><h3>{t("ai.question")}</h3><div className="assistant-task-grid">{tasks.map(([key, Icon, taskKey]) => <button className="assistant-task" key={key} type="button" onClick={() => selectTask({ key: taskKey })} disabled={available !== true}><span className="assistant-task-icon"><Icon size={16} /></span><span><b>{t(key)}</b><small>{t(`${key}.description`)}</small></span></button>)}</div></div>}
-                  {messages.map((message, index) => <div key={`${message.role}-${index}`} className={`assistant-message ${message.role}`}>{renderMessage(message.content)}</div>)}
+                  {(showTasks || !messages.length) && <div className="assistant-guided"><h3>{t("ai.question")}</h3><div className="assistant-task-grid">{tasks.map(([key, Icon, taskKey, type]) => <button className="assistant-task" key={key} type="button" onClick={() => selectTask({ key: taskKey, type })} disabled={available !== true}><span className="assistant-task-icon"><Icon size={16} /></span><span><b>{t(key)}</b><small>{t(`${key}.description`)}</small></span></button>)}</div></div>}
+                  {messages.map((message, index) => <div key={`${message.role}-${index}`} className={`assistant-message ${message.role}`}><div className="assistant-markdown">{renderMessage(message.content)}</div></div>)}
                   {loading && <div className="assistant-message assistant loading"><LoaderCircle size={16} className="spin" />{t("ai.loading")}</div>}
                 </div>
                 {error && <div className="assistant-error">{error}</div>}

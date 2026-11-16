@@ -3189,8 +3189,26 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 .assistant-consent > div { display: flex; gap: 8px; flex-wrap: wrap; }
 .assistant-messages { display: grid; gap: 10px; max-height: 360px; overflow-y: auto; padding: 4px 2px 12px; }
 .assistant-message { max-width: 88%; padding: 11px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
-.assistant-message p { margin: 0 0 8px; }
-.assistant-message p:last-child { margin-bottom: 0; }
+.assistant-markdown { min-width: 0; }
+.assistant-markdown > :first-child { margin-top: 0; }
+.assistant-markdown > :last-child { margin-bottom: 0; }
+.assistant-markdown p { margin: 0 0 8px; }
+.assistant-markdown h1, .assistant-markdown h2, .assistant-markdown h3, .assistant-markdown h4 { margin: 14px 0 6px; color: var(--c-brick); line-height: 1.25; }
+.assistant-markdown h1 { font-size: 19px; }
+.assistant-markdown h2 { font-size: 16px; }
+.assistant-markdown h3, .assistant-markdown h4 { font-size: 14px; }
+.assistant-markdown ul, .assistant-markdown ol { margin: 6px 0 10px; padding-left: 21px; }
+.assistant-markdown li { margin: 3px 0; }
+.assistant-markdown blockquote { margin: 10px 0; padding: 5px 12px; border-left: 3px solid var(--c-yolk); color: var(--c-ink-soft); }
+.assistant-markdown code { padding: 2px 5px; border-radius: 5px; background: #EDE9E3; font-size: .9em; }
+.assistant-markdown pre { margin: 10px 0; padding: 11px 12px; overflow-x: auto; border-radius: 9px; background: #202636; color: #F7F4F0; }
+.assistant-markdown pre code { padding: 0; background: transparent; color: inherit; }
+.assistant-markdown hr { margin: 12px 0; border: 0; border-top: 1px solid var(--c-line); }
+.assistant-markdown a { color: var(--c-brick); text-decoration: underline; }
+.assistant-markdown table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.assistant-table-wrap { max-width: 100%; overflow-x: auto; margin: 10px 0; }
+.assistant-markdown th, .assistant-markdown td { padding: 6px 8px; border: 1px solid var(--c-line); text-align: left; white-space: nowrap; }
+.assistant-markdown th { background: #EDE9E3; font-weight: 700; }
 .assistant-message.user { justify-self: end; background: var(--c-ink); color: #fff; border-bottom-right-radius: 5px; }
 .assistant-message.assistant { justify-self: start; background: #F7F4F0; color: var(--c-ink); border-bottom-left-radius: 5px; }
 .assistant-message.loading { display: inline-flex; align-items: center; gap: 8px; }
@@ -3226,11 +3244,6 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 .assistant-task > span:last-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .assistant-task b { font-size: 13px; }
 .assistant-task small { color: var(--c-ink-soft); font-size: 11.5px; line-height: 1.35; }
-.assistant-section { margin: 2px 0 8px; }
-.assistant-section h4 { margin: 0 0 2px; color: var(--c-brick); font-size: 12px; letter-spacing: .03em; text-transform: uppercase; }
-.assistant-section p { margin: 0; }
-.assistant-bullet { margin: 3px 0; line-height: 1.5; }
-.assistant-break { display: block; height: 5px; }
 .assistant-footer-actions { display: inline-flex; align-items: center; gap: 10px; }
 @keyframes assistant-drawer-in { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .assistant-drawer { animation: none; } }
@@ -3284,7 +3297,7 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
   .assistant-send { align-self: flex-end; }
   .assistant-dock { right: 12px; bottom: 12px; left: 12px; align-items: stretch; }
   .assistant-fab { align-self: flex-end; }
-  .assistant-drawer { width: 100%; max-height: calc(100vh - 84px); border-radius: 20px; }
+  .assistant-drawer { width: 100%; max-height: calc(100vh - 84px); min-height: min(680px, calc(100vh - 84px)); border-radius: 20px; }
 }
 /* ---- Guided tour ---- */
 .tour-btn { display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px; border: none; border-radius: 999px; background: #fff; color: var(--c-ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 0 var(--c-line); }

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { BarChart3, Bot, Check, Compass, Lightbulb, LineChart, LoaderCircle, RotateCcw, Send, ShieldAlert, Store, TrendingUp, X } from "lucide-react";
+import { BarChart3, Bot, Check, Compass, Lightbulb, LineChart, LoaderCircle, RotateCcw, ShieldAlert, Store, TrendingUp, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { buildAssistantContext } from "../utils/assistant.js";
@@ -36,12 +36,11 @@ export default function AssistantPanel({
   const [consent, setConsent] = useState(() => {
     try { return window.localStorage.getItem(CONSENT_KEY) || null; } catch { return null; }
   });
-  const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [taskType, setTaskType] = useState(null);
-  const inputRef = useRef(null);
+  const [selectedTask, setSelectedTask] = useState(null);
   const messagesRef = useRef(null);
   const buttonRef = useRef(null);
 
@@ -61,7 +60,6 @@ export default function AssistantPanel({
 
   useEffect(() => {
     if (!open) return undefined;
-    inputRef.current?.focus();
     const closeOnEscape = event => {
       if (event.key === "Escape") {
         setOpen(false);
@@ -109,19 +107,39 @@ export default function AssistantPanel({
     ],
   };
   const tasks = tasksByPage[page] || tasksByPage.dashboard;
+  const taskLookup = Object.fromEntries(Object.values(tasksByPage).flat().map(([, Icon, key, type]) => [key, { key, Icon, type }]));
+  const followUpsByTask = {
+    conditions: ["compare", "movements"],
+    movements: ["conditions", "unusual"],
+    compare: ["movements", "conditions"],
+    forecast: ["reliability", "recommendations", "models"],
+    reliability: ["forecast", "models", "recommendations"],
+    recommendations: ["forecast", "reliability"],
+    patterns: ["indicators", "unusual"],
+    indicators: ["correlation", "patterns"],
+    correlation: ["indicators", "patterns"],
+    records: ["trends", "unusual"],
+    trends: ["records", "unusual"],
+    unusual: ["trends", "compare"],
+    settings: ["models", "changes"],
+    models: ["forecast", "reliability"],
+    changes: ["settings", "forecast"],
+    using: ["features", "sources"],
+    features: ["using", "sources"],
+    sources: ["records", "using"],
+  };
 
   const chooseConsent = value => {
     setConsent(value ? "accepted" : "declined");
     try { window.localStorage.setItem(CONSENT_KEY, value ? "accepted" : "declined"); } catch { /* optional preference */ }
   };
 
-  const send = async (value, selectedTaskType = taskType) => {
-    const text = String(value ?? question).trim();
+  const send = async (value, selectedTaskType = taskType, displayText = value) => {
+    const text = String(value || "").trim();
     if (!text || loading || consent !== "accepted") return;
     setShowTasks(false);
-    setQuestion("");
     setError("");
-    setMessages(current => [...current, { role: "user", content: text }]);
+    setMessages(current => [...current, { role: "user", content: text, display: displayText }]);
     setLoading(true);
     try {
       const response = await fetch("/api/assistant", {
@@ -144,10 +162,15 @@ export default function AssistantPanel({
   const [showTasks, setShowTasks] = useState(true);
   const selectTask = task => {
     const title = t(`ai.task.${task.key}`);
+    setSelectedTask(task.key);
     setTaskType(task.type);
-    send(`${title}\n\n${t(`ai.task.${task.key}.prompt`)} ${t("ai.structured")}`, task.type);
+    send(`${title}\n\n${t(`ai.task.${task.key}.prompt`)} ${t("ai.structured")}`, task.type, title);
   };
-  const reset = () => { setMessages([]); setQuestion(""); setError(""); setTaskType(null); setShowTasks(true); };
+  const reset = () => { setMessages([]); setError(""); setTaskType(null); setSelectedTask(null); setShowTasks(true); };
+  const runFollowUp = key => {
+    const task = taskLookup[key];
+    if (task) selectTask(task);
+  };
   if (!visible) return null;
 
   return (
@@ -165,17 +188,24 @@ export default function AssistantPanel({
             {consent === "declined" && <div className="assistant-notice">{t("ai.declined")} <button type="button" className="link-button" onClick={() => chooseConsent(true)}>{t("ai.enable")}</button></div>}
             {consent === "accepted" && (
               <>
-                <div className="assistant-messages" ref={messagesRef} aria-live="polite">
-                  {(showTasks || !messages.length) && <div className="assistant-guided"><h3>{t("ai.question")}</h3><div className="assistant-task-grid">{tasks.map(([key, Icon, taskKey, type]) => <button className="assistant-task" key={key} type="button" onClick={() => selectTask({ key: taskKey, type })} disabled={available !== true}><span className="assistant-task-icon"><Icon size={16} /></span><span><b>{t(key)}</b><small>{t(`${key}.description`)}</small></span></button>)}</div></div>}
-                  {messages.map((message, index) => <div key={`${message.role}-${index}`} className={`assistant-message ${message.role}`}><div className="assistant-markdown">{renderMessage(message.content)}</div></div>)}
-                  {loading && <div className="assistant-message assistant loading"><LoaderCircle size={16} className="spin" />{t("ai.loading")}</div>}
-                </div>
+                {showTasks && <div className="assistant-guided">
+                  <div className="assistant-context">{t(`nav.${page === "dashboard" ? "home" : page === "predict" ? "forecast" : page === "analysis" ? "analysis" : page === "data" ? "data" : page === "settings" ? "settings" : "help"}`)}</div>
+                  <h3>{t("ai.question")}</h3>
+                  <div className="assistant-task-grid">{tasks.map(([key, Icon, taskKey, type]) => <button className="assistant-task" key={key} type="button" onClick={() => selectTask({ key: taskKey, type })} disabled={available !== true}><span className="assistant-task-icon"><Icon size={16} /></span><span><b>{t(key)}</b><small>{t(`${key}.description`)}</small></span></button>)}</div>
+                </div>}
+                {!showTasks && <div className="assistant-analysis">
+                  <div className="assistant-analysis-head">
+                    <button type="button" className="link-button" onClick={() => setShowTasks(true)}>{t("ai.back")}</button>
+                    <span className="assistant-analysis-label">{selectedTask ? t(`ai.task.${selectedTask}`) : t("ai.analysis")}</span>
+                  </div>
+                  <div className="assistant-messages" ref={messagesRef} aria-live="polite">
+                    {messages.map((message, index) => <div key={`${message.role}-${index}`} className={`assistant-message ${message.role}`}><div className="assistant-markdown">{message.role === "user" ? message.display : renderMessage(message.content)}</div></div>)}
+                    {loading && <div className="assistant-message assistant loading"><LoaderCircle size={16} className="spin" />{t("ai.loading")}</div>}
+                  </div>
+                  {!loading && selectedTask && followUpsByTask[selectedTask]?.length > 0 && <div className="assistant-followups"><span>{t("ai.followups")}</span><div>{followUpsByTask[selectedTask].map(key => <button type="button" key={key} onClick={() => runFollowUp(key)} disabled={available !== true}>{t(`ai.task.${key}`)}</button>)}</div></div>}
+                </div>}
                 {error && <div className="assistant-error">{error}</div>}
-                <form className="assistant-form" onSubmit={event => { event.preventDefault(); send(); }}>
-                  <textarea ref={inputRef} value={question} onChange={event => setQuestion(event.target.value)} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); send(); } }} placeholder={t("ai.placeholder")} aria-label={t("ai.placeholder")} disabled={loading || available !== true} rows="2" />
-                  <button className="btn btn-primary assistant-send" type="submit" disabled={loading || available !== true || !question.trim()}><Send size={15} />{t("ai.send")}</button>
-                </form>
-                <div className="assistant-footer"><small>{t("ai.privacy")}</small><span className="assistant-footer-actions">{messages.length > 0 && !showTasks && <button type="button" className="link-button" onClick={() => setShowTasks(true)}>{t("ai.more")}</button>}<button type="button" className="link-button" onClick={reset}><RotateCcw size={13} />{t("ai.new")}</button></span></div>
+                <div className="assistant-footer"><small>{t("ai.privacy")}</small><span className="assistant-footer-actions"><button type="button" className="link-button" onClick={reset}><RotateCcw size={13} />{t("ai.new")}</button></span></div>
               </>
             )}
           </div>

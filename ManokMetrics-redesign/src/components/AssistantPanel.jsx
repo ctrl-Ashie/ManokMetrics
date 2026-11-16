@@ -178,7 +178,7 @@ export default function AssistantPanel({
       {open && (
         <section className="assistant-drawer" role="dialog" aria-modal="false" aria-labelledby="assistant-title">
           <div className="assistant-drawer-head">
-            <span className="assistant-title"><span className="assistant-icon"><Bot size={18} /></span><span><b id="assistant-title">{t("ai.title")}</b><small>{t("ai.subtitle")}</small></span></span>
+            <span className="assistant-title"><span className="assistant-icon"><Bot size={20} /></span><span className="assistant-head-copy"><b id="assistant-title">{t("ai.title")}</b><small>{t("ai.subtitle")}</small><em>{t("ai.status")}</em></span></span>
             <button type="button" className="assistant-close" onClick={() => { setOpen(false); buttonRef.current?.focus(); }} aria-label={t("ai.close")}><X size={18} /></button>
           </div>
           <div className="assistant-body">
@@ -211,7 +211,7 @@ export default function AssistantPanel({
           </div>
         </section>
       )}
-      <button ref={buttonRef} type="button" className="assistant-fab" onClick={() => setOpen(value => !value)} aria-expanded={open} aria-label={open ? t("ai.close") : t("ai.open")}><Bot size={20} /><span>{t("ai.open")}</span></button>
+      <button ref={buttonRef} type="button" className="assistant-fab" data-tour="assistant" onClick={() => setOpen(value => !value)} aria-expanded={open} aria-label={open ? t("ai.close") : t("ai.open")}><Bot size={20} /><span>{t("ai.open")}</span></button>
     </div>
   );
 }

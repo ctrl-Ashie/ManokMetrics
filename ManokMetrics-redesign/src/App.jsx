@@ -183,7 +183,7 @@ const STRINGS = {
     "fc.adv.col1": "Method", "fc.adv.col2": "Usual miss", "fc.adv.col3": "Percent miss",
     "fc.whatif": "What if the farm price is different?", "fc.whatif.body": "Type a farm price to see how the guess changes. It starts at the latest farm price ({x}).", "fc.whatif.apply": "Apply", "fc.whatif.reset": "Back to latest",
     "fc.how2.body": "We look at how the market price changed in recent months and how farm prices changed. Then we predict how much the market price will change. We test several methods on past months and use the most accurate one.", "fc.how2.farm": "We look at how the farmgate price changed in recent months. Then we predict how much the farmgate price will change. We test several methods on past months and use the most accurate one.",
-    "ai.title": "ManokMetrics Analysis Assistant", "ai.subtitle": "A focused guide to the numbers on this page", "ai.open": "Analyze with ManokMetrics", "ai.close": "Close assistant", "ai.intro": "Choose a focused analysis of the data, forecast, or relationships on this page.", "ai.consent": "This optional assistant sends your selected analysis and a small summary of this dashboard to an external AI service. It does not send your CSV file or full history. Do you agree?", "ai.allow": "Allow and continue", "ai.decline": "Not now", "ai.disabled": "The assistant is unavailable because its secure server connection is not configured. The dashboard still works normally.", "ai.declined": "The assistant is turned off. Your dashboard continues to work normally.", "ai.enable": "Enable it", "ai.loading": "Preparing analysis...", "ai.placeholder": "Ask a question about ManokMetrics...", "ai.send": "Send", "ai.new": "New analysis session", "ai.privacy": "Only a compact dashboard summary is sent with each analysis.", "ai.error.unavailable": "I couldn't prepare this analysis right now. Please try again later.", "ai.back": "Back to analyses", "ai.analysis": "Analysis", "ai.followups": "Explore this analysis further", "ai.suggest.forecast": "Explain my current forecast.", "ai.suggest.reliable": "How reliable is this prediction?", "ai.suggest.difference": "Why are farmgate and market prices different?", "ai.suggest.metrics": "What do the model accuracy numbers mean?", "ai.suggest.trend": "Explain the recent price trend.", "ai.suggest.prices": "Explain the current prices.", "ai.suggest.changed": "What changed compared to last month?", "ai.suggest.correlation": "What does this correlation mean?", "ai.suggest.indicators": "Which indicators move most closely with prices?", "ai.suggest.causation": "Does correlation mean one factor causes another?", "ai.suggest.records": "Explain these price records.", "ai.suggest.column": "What does this column mean?", "ai.suggest.values": "How can I interpret these values?", "ai.suggest.settings": "What do these settings change?", "ai.suggest.sources": "Where do the dashboard numbers come from?", "ai.suggest.using": "How do I use this dashboard?",
+    "ai.title": "ManokMetrics Analysis Assistant", "ai.subtitle": "A focused guide to the numbers on this page", "ai.status": "Analytical workspace", "ai.open": "Analyze with ManokMetrics", "ai.close": "Close assistant", "ai.intro": "Choose a focused analysis of the data, forecast, or relationships on this page.", "ai.consent": "This optional assistant sends your selected analysis and a small summary of this dashboard to an external AI service. It does not send your CSV file or full history. Do you agree?", "ai.allow": "Allow and continue", "ai.decline": "Not now", "ai.disabled": "The assistant is unavailable because its secure server connection is not configured. The dashboard still works normally.", "ai.declined": "The assistant is turned off. Your dashboard continues to work normally.", "ai.enable": "Enable it", "ai.loading": "Preparing analysis...", "ai.placeholder": "Ask a question about ManokMetrics...", "ai.send": "Send", "ai.new": "New analysis session", "ai.privacy": "Only a compact dashboard summary is sent with each analysis.", "ai.error.unavailable": "I couldn't prepare this analysis right now. Please try again later.", "ai.back": "Back to analyses", "ai.analysis": "Analysis", "ai.followups": "Explore this analysis further", "ai.suggest.forecast": "Explain my current forecast.", "ai.suggest.reliable": "How reliable is this prediction?", "ai.suggest.difference": "Why are farmgate and market prices different?", "ai.suggest.metrics": "What do the model accuracy numbers mean?", "ai.suggest.trend": "Explain the recent price trend.", "ai.suggest.prices": "Explain the current prices.", "ai.suggest.changed": "What changed compared to last month?", "ai.suggest.correlation": "What does this correlation mean?", "ai.suggest.indicators": "Which indicators move most closely with prices?", "ai.suggest.causation": "Does correlation mean one factor causes another?", "ai.suggest.records": "Explain these price records.", "ai.suggest.column": "What does this column mean?", "ai.suggest.values": "How can I interpret these values?", "ai.suggest.settings": "What do these settings change?", "ai.suggest.sources": "Where do the dashboard numbers come from?", "ai.suggest.using": "How do I use this dashboard?",
     "ai.question": "What would you like to analyze?", "ai.more": "Choose another analysis", "ai.structured": "Write a concise analytical report in Markdown. Use only relevant sections such as Overview, Key findings, Interpretation, Limitations, and What to look at next. Keep observed data, predictions, and assumptions distinct.",
     "ai.task.conditions": "Current market conditions", "ai.task.conditions.description": "Get a quick summary of today’s selected prices and gap.", "ai.task.conditions.prompt": "Summarize the current market conditions using the selected product and latest observed prices.",
     "ai.task.movements": "Recent price movements", "ai.task.movements.description": "See what changed recently and what the data shows.", "ai.task.movements.prompt": "Explain the recent observed price movements and changes compared with the previous available period.",
@@ -238,8 +238,10 @@ const STRINGS = {
     "tour.s11.d": "Plain-language meanings of terms like price gap and forecast, common questions, and a button to replay this tour.",
     "tour.s12.t": "Switch language",
     "tour.s12.d": "Change between English and Filipino any time.",
-    "tour.s13.t": "You are ready!",
-    "tour.s13.d": "Press the Tour button at the top any time to see this again. Happy exploring!",
+    "tour.s13.t": "Meet your AI assistant",
+    "tour.s13.d": "Need help understanding the numbers? Open the AI assistant to explore price movements, forecasts, and other insights through guided analyses. Just choose what you want to understand.",
+    "tour.s14.t": "You are ready!",
+    "tour.s14.d": "Press the Tour button at the top any time to see this again. Happy exploring!",
   },
   fil: {
     "brand.sub": "Gabay sa presyo ng manok at itlog",
@@ -348,7 +350,7 @@ const STRINGS = {
     "fc.adv.col1": "Pamamaraan", "fc.adv.col2": "Karaniwang mali", "fc.adv.col3": "Porsyentong mali",
     "fc.whatif": "Paano kung iba ang presyo sa bukid?", "fc.whatif.body": "Maglagay ng presyo sa bukid para makita kung paano nagbabago ang hula. Nagsisimula ito sa pinakabagong presyo sa bukid ({x}).", "fc.whatif.apply": "Ilapat", "fc.whatif.reset": "Bumalik sa pinakabago",
     "fc.how2.body": "Tinitingnan namin kung paano nagbago ang presyo sa palengke nitong mga nakaraang buwan at kung paano nagbago ang presyo sa bukid. Pagkatapos, hinuhulaan namin kung gaano magbabago ang presyo sa palengke. Sinusubukan namin ang ilang pamamaraan sa mga nakaraang buwan at ginagamit ang pinakatumpak.", "fc.how2.farm": "Tinitingnan namin kung paano nagbago ang presyo sa bukid nitong mga nakaraang buwan. Pagkatapos, hinuhulaan namin kung gaano magbabago ang presyo sa bukid. Sinusubukan namin ang ilang pamamaraan sa mga nakaraang buwan at ginagamit ang pinakatumpak.",
-    "ai.title": "ManokMetrics Analysis Assistant", "ai.subtitle": "Tiyak na gabay sa mga numerong nasa pahinang ito", "ai.open": "Suriin gamit ang ManokMetrics", "ai.close": "Isara ang assistant", "ai.intro": "Pumili ng nakatuong pagsusuri ng data, hula, o ugnayan sa pahinang ito.", "ai.consent": "Opsyonal ang assistant na ito. Ipinapadala nito ang napili mong pagsusuri at maikling buod ng dashboard sa isang external AI service. Hindi nito ipinapadala ang CSV o buong kasaysayan. Sumasang-ayon ka ba?", "ai.allow": "Payagan at magpatuloy", "ai.decline": "Hindi muna", "ai.disabled": "Hindi magagamit ang assistant dahil hindi naka-configure ang ligtas na koneksyon sa server. Patuloy na gagana nang normal ang dashboard.", "ai.declined": "Naka-off ang assistant. Patuloy na gagana nang normal ang dashboard.", "ai.enable": "I-on ito", "ai.loading": "Inihahanda ang pagsusuri...", "ai.placeholder": "Magtanong tungkol sa ManokMetrics...", "ai.send": "Ipadala", "ai.new": "Bagong session ng pagsusuri", "ai.privacy": "Maikling buod lamang ng dashboard ang ipinapadala sa bawat pagsusuri.", "ai.error.unavailable": "Hindi ko maihanda ang pagsusuring ito ngayon. Subukan muli mamaya.", "ai.back": "Bumalik sa mga pagsusuri", "ai.analysis": "Pagsusuri", "ai.followups": "Suriin pa ang pagsusuring ito", "ai.suggest.forecast": "Ipaliwanag ang kasalukuyan kong hula.", "ai.suggest.reliable": "Gaano katiyak ang hulang ito?", "ai.suggest.difference": "Bakit magkaiba ang presyo sa bukid at palengke?", "ai.suggest.metrics": "Ano ang ibig sabihin ng mga numero ng katumpakan?", "ai.suggest.trend": "Ipaliwanag ang kamakailang galaw ng presyo.", "ai.suggest.prices": "Ipaliwanag ang kasalukuyang mga presyo.", "ai.suggest.changed": "Ano ang nagbago kumpara noong nakaraang buwan?", "ai.suggest.correlation": "Ano ang ibig sabihin ng ugnayang ito?", "ai.suggest.indicators": "Aling mga panukat ang pinakamalapit ang galaw sa presyo?", "ai.suggest.causation": "Ibig bang sabihin ng ugnayan ay sanhi ang isang bagay sa isa pa?", "ai.suggest.records": "Ipaliwanag ang mga rekord ng presyo.", "ai.suggest.column": "Ano ang ibig sabihin ng kolum na ito?", "ai.suggest.values": "Paano ko mauunawaan ang mga halagang ito?", "ai.suggest.settings": "Ano ang binabago ng mga setting na ito?", "ai.suggest.sources": "Saan galing ang mga numero sa dashboard?", "ai.suggest.using": "Paano gamitin ang dashboard?",
+    "ai.title": "ManokMetrics Analysis Assistant", "ai.subtitle": "Tiyak na gabay sa mga numerong nasa pahinang ito", "ai.status": "Lugar para sa pagsusuri", "ai.open": "Suriin gamit ang ManokMetrics", "ai.close": "Isara ang assistant", "ai.intro": "Pumili ng nakatuong pagsusuri ng data, hula, o ugnayan sa pahinang ito.", "ai.consent": "Opsyonal ang assistant na ito. Ipinapadala nito ang napili mong pagsusuri at maikling buod ng dashboard sa isang external AI service. Hindi nito ipinapadala ang CSV o buong kasaysayan. Sumasang-ayon ka ba?", "ai.allow": "Payagan at magpatuloy", "ai.decline": "Hindi muna", "ai.disabled": "Hindi magagamit ang assistant dahil hindi naka-configure ang ligtas na koneksyon sa server. Patuloy na gagana nang normal ang dashboard.", "ai.declined": "Naka-off ang assistant. Patuloy na gagana nang normal ang dashboard.", "ai.enable": "I-on ito", "ai.loading": "Inihahanda ang pagsusuri...", "ai.placeholder": "Magtanong tungkol sa ManokMetrics...", "ai.send": "Ipadala", "ai.new": "Bagong session ng pagsusuri", "ai.privacy": "Maikling buod lamang ng dashboard ang ipinapadala sa bawat pagsusuri.", "ai.error.unavailable": "Hindi ko maihanda ang pagsusuring ito ngayon. Subukan muli mamaya.", "ai.back": "Bumalik sa mga pagsusuri", "ai.analysis": "Pagsusuri", "ai.followups": "Suriin pa ang pagsusuring ito", "ai.suggest.forecast": "Ipaliwanag ang kasalukuyan kong hula.", "ai.suggest.reliable": "Gaano katiyak ang hulang ito?", "ai.suggest.difference": "Bakit magkaiba ang presyo sa bukid at palengke?", "ai.suggest.metrics": "Ano ang ibig sabihin ng mga numero ng katumpakan?", "ai.suggest.trend": "Ipaliwanag ang kamakailang galaw ng presyo.", "ai.suggest.prices": "Ipaliwanag ang kasalukuyang mga presyo.", "ai.suggest.changed": "Ano ang nagbago kumpara noong nakaraang buwan?", "ai.suggest.correlation": "Ano ang ibig sabihin ng ugnayang ito?", "ai.suggest.indicators": "Aling mga panukat ang pinakamalapit ang galaw sa presyo?", "ai.suggest.causation": "Ibig bang sabihin ng ugnayan ay sanhi ang isang bagay sa isa pa?", "ai.suggest.records": "Ipaliwanag ang mga rekord ng presyo.", "ai.suggest.column": "Ano ang ibig sabihin ng kolum na ito?", "ai.suggest.values": "Paano ko mauunawaan ang mga halagang ito?", "ai.suggest.settings": "Ano ang binabago ng mga setting na ito?", "ai.suggest.sources": "Saan galing ang mga numero sa dashboard?", "ai.suggest.using": "Paano gamitin ang dashboard?",
     "ai.question": "Ano ang gusto mong suriin?", "ai.more": "Pumili ng ibang pagsusuri", "ai.structured": "Sumulat ng maikli at analytical na ulat sa Markdown. Gamitin lamang ang angkop na seksyon tulad ng Buod, Mahahalagang resulta, Kahulugan, Limitasyon, at Susunod na titingnan. Linawin ang aktuwal na data, hula, at palagay.",
     "ai.task.conditions": "Kasalukuyang kondisyon ng merkado", "ai.task.conditions.description": "Mabilis na buod ng mga presyo at agwat ngayon.", "ai.task.conditions.prompt": "Ibuod ang kasalukuyang kondisyon ng merkado gamit ang napiling produkto at pinakabagong naobserbahang presyo.",
     "ai.task.movements": "Kamakailang galaw ng presyo", "ai.task.movements.description": "Tingnan kung ano ang nagbago kamakailan.", "ai.task.movements.prompt": "Ipaliwanag ang kamakailang naobserbahang galaw ng presyo kumpara sa naunang panahon.",
@@ -403,8 +405,10 @@ const STRINGS = {
     "tour.s11.d": "Mga simpleng paliwanag sa mga salita tulad ng agwat ng presyo at forecast, mga karaniwang tanong, at button para ulitin ang gabay na ito.",
     "tour.s12.t": "Palitan ang wika",
     "tour.s12.d": "Lumipat sa pagitan ng English at Filipino anumang oras.",
-    "tour.s13.t": "Handa ka na!",
-    "tour.s13.d": "Pindutin ang button na Gabay sa itaas anumang oras para makita ulit ito. Masayang mag-explore!",
+    "tour.s13.t": "Kilalanin ang iyong AI assistant",
+    "tour.s13.d": "Kailangan ng tulong sa pag-unawa ng mga numero? Buksan ang AI assistant para suriin ang galaw ng presyo, mga hula, at iba pang insight gamit ang mga gabay na pagsusuri. Piliin lang ang gusto mong maunawaan.",
+    "tour.s14.t": "Handa ka na!",
+    "tour.s14.d": "Pindutin ang button na Gabay sa itaas anumang oras para makita ulit ito. Masayang mag-explore!",
   },
 };
 const LangContext = React.createContext("en");
@@ -2262,7 +2266,8 @@ const TOUR_STEPS = [
   { id: "s10", target: '[data-tour="nav-data"]', nav: true },
   { id: "s11", target: '[data-tour="nav-faq"]', nav: true },
   { id: "s12", target: '[data-tour="lang"]' },
-  { id: "s13", tab: "dashboard" },
+  { id: "s13", tab: "dashboard", target: '[data-tour="assistant"]' },
+  { id: "s14", tab: "dashboard" },
 ];
 
 function findTourTarget(selector) {
@@ -2338,7 +2343,11 @@ function GuidedTour({ onNavigate, onClose }) {
   let spotStyle = null;
   if (rect) {
     spotStyle = { top: rect.top - pad, left: rect.left - pad, width: rect.width + pad * 2, height: rect.height + pad * 2 };
-    if (phone) {
+    if (step.id === "s13") {
+      cardStyle = phone
+        ? { bottom: 92, left: 12, right: 12 }
+        : { bottom: 92, right: 24, width: CARD_W };
+    } else if (phone) {
       const targetMid = rect.top + rect.height / 2;
       cardStyle = targetMid > size.h / 2 ? { top: 12, left: 12, right: 12 } : { bottom: 12, left: 12, right: 12 };
     } else {
@@ -3177,7 +3186,7 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 .assistant-consent p { margin: 0 0 12px; }
 .assistant-consent > div { display: flex; gap: 8px; flex-wrap: wrap; }
 .assistant-messages { display: grid; gap: 10px; max-height: 360px; overflow-y: auto; padding: 4px 2px 12px; }
-.assistant-message { max-width: 88%; padding: 11px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
+.assistant-message { max-width: 94%; padding: 13px 16px; border-radius: 16px; font-size: 14px; line-height: 1.58; overflow-wrap: anywhere; }
 .assistant-markdown { min-width: 0; }
 .assistant-markdown > :first-child { margin-top: 0; }
 .assistant-markdown > :last-child { margin-bottom: 0; }
@@ -3198,7 +3207,7 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 .assistant-table-wrap { max-width: 100%; overflow-x: auto; margin: 10px 0; }
 .assistant-markdown th, .assistant-markdown td { padding: 6px 8px; border: 1px solid var(--c-line); text-align: left; white-space: nowrap; }
 .assistant-markdown th { background: #EDE9E3; font-weight: 700; }
-.assistant-message.user { justify-self: end; background: var(--c-ink); color: #fff; border-bottom-right-radius: 5px; }
+.assistant-message.user { justify-self: start; max-width: 100%; padding: 7px 0 2px; background: transparent; color: var(--c-ink-soft); font-size: 12px; font-weight: 700; }
 .assistant-message.assistant { justify-self: start; background: #F7F4F0; color: var(--c-ink); border-bottom-left-radius: 5px; }
 .assistant-message.loading { display: inline-flex; align-items: center; gap: 8px; }
 .assistant-error { margin: 0 0 10px; color: #B23E2A; font-size: 13px; }
@@ -3208,17 +3217,19 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 .spin { animation: assistant-spin .9s linear infinite; }
 @keyframes assistant-spin { to { transform: rotate(360deg); } }
 .assistant-dock { position: fixed; right: 24px; bottom: 24px; z-index: 80; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
-.assistant-fab { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; padding: 13px 18px; background: var(--c-brick); color: #fff; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 24px rgba(197,74,47,.28); transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
+.assistant-fab { display: inline-flex; align-items: center; gap: 9px; border: 1px solid rgba(255,255,255,.2); border-radius: 15px; padding: 13px 17px; background: var(--c-brick); color: #fff; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; box-shadow: 0 10px 24px rgba(197,74,47,.28); transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
 .assistant-fab:hover, .assistant-fab:focus-visible { background: var(--c-yolk); color: var(--c-ink); transform: translateY(-2px); box-shadow: 0 14px 28px rgba(197,119,24,.38); outline: none; }
-.assistant-drawer { width: min(390px, calc(100vw - 32px)); max-height: min(650px, calc(100vh - 100px)); display: flex; flex-direction: column; overflow: hidden; background: #fff; border: 1px solid #E9E3DA; border-radius: 22px; box-shadow: 0 18px 55px rgba(17,22,43,.25); animation: assistant-drawer-in .2s ease-out; }
-.assistant-drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 18px; border-bottom: 1px solid #F0ECE6; }
+.assistant-drawer { width: min(470px, calc(100vw - 32px)); max-height: min(760px, calc(100vh - 64px)); display: flex; flex-direction: column; overflow: hidden; background: #fff; border: 1px solid #E9E3DA; border-radius: 24px; box-shadow: 0 22px 65px rgba(17,22,43,.28); animation: assistant-drawer-in .2s ease-out; }
+.assistant-drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #F0ECE6; background: linear-gradient(110deg, #FBF9F6, #fff); }
 .assistant-close { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--c-ink-soft); cursor: pointer; }
 .assistant-close:hover, .assistant-close:focus-visible { background: #F7F4F0; color: var(--c-ink); outline: none; }
-.assistant-drawer .assistant-body { min-height: 0; overflow-y: auto; }
+.assistant-drawer .assistant-body { min-height: 0; overflow-y: auto; padding: 20px; }
+.assistant-head-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.assistant-head-copy em { color: var(--c-teal); font-size: 10px; font-style: normal; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .assistant-drawer .assistant-messages { min-height: 80px; }
 .assistant-context { display: inline-flex; margin-bottom: 8px; padding: 4px 9px; border-radius: 999px; background: #DDF1EA; color: var(--c-teal); font-size: 11px; font-weight: 700; }
-.assistant-guided h3 { margin: 0 0 10px; font-family: 'Fraunces', Georgia, serif; font-size: 20px; }
-.assistant-analysis-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.assistant-guided h3 { margin: 0 0 14px; font-family: 'Fraunces', Georgia, serif; font-size: 23px; }
+.assistant-analysis-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #F0ECE6; }
 .assistant-analysis-label { min-width: 0; overflow: hidden; color: var(--c-ink-soft); font-size: 12px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .assistant-followups { margin-top: 4px; padding-top: 10px; border-top: 1px solid #F0ECE6; }
 .assistant-followups > span { display: block; margin-bottom: 7px; color: var(--c-ink-soft); font-size: 11.5px; font-weight: 700; }
@@ -3226,9 +3237,9 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
 .assistant-followups button { border: 1px solid var(--c-line); border-radius: 999px; background: #fff; color: var(--c-ink); padding: 7px 10px; font: inherit; font-size: 11.5px; cursor: pointer; text-align: left; }
 .assistant-followups button:hover:not(:disabled), .assistant-followups button:focus-visible { border-color: var(--c-brick); background: #FFF6E6; outline: none; }
 .assistant-followups button:disabled { opacity: .55; cursor: not-allowed; }
-.assistant-task-grid { display: grid; gap: 8px; }
-.assistant-task { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 11px 12px; border: 1px solid var(--c-line); border-radius: 14px; background: #FBF9F6; color: var(--c-ink); text-align: left; cursor: pointer; font: inherit; transition: border-color .15s ease, background .15s ease, transform .15s ease; }
-.assistant-task:hover:not(:disabled), .assistant-task:focus-visible { border-color: var(--c-brick); background: #FFF6E6; transform: translateY(-1px); outline: none; }
+.assistant-task-grid { display: grid; gap: 10px; }
+.assistant-task { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 70px; padding: 13px 14px; border: 1px solid var(--c-line); border-radius: 16px; background: #FBF9F6; color: var(--c-ink); text-align: left; cursor: pointer; font: inherit; transition: border-color .15s ease, background .15s ease, transform .15s ease, box-shadow .15s ease; }
+.assistant-task:hover:not(:disabled), .assistant-task:focus-visible { border-color: var(--c-brick); background: #FFF6E6; transform: translateY(-1px); box-shadow: 0 7px 16px rgba(17,22,43,.08); outline: none; }
 .assistant-task:disabled { opacity: .55; cursor: not-allowed; }
 .assistant-task-icon { display: grid; place-items: center; width: 28px; height: 28px; flex-shrink: 0; border-radius: 9px; background: #FBE3DC; color: var(--c-brick); }
 .assistant-task > span:last-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -3285,7 +3296,9 @@ details.fold .panel { box-shadow: none; border: 1px solid #F0ECE6; }
   .kpis, .action-cards { grid-template-columns: 1fr; }
   .assistant-dock { right: 12px; bottom: 12px; left: 12px; align-items: stretch; }
   .assistant-fab { align-self: flex-end; }
-  .assistant-drawer { width: 100%; max-height: calc(100vh - 84px); min-height: min(680px, calc(100vh - 84px)); border-radius: 20px; }
+  .assistant-drawer { width: 100%; max-height: calc(100vh - 24px); min-height: calc(100vh - 24px); border-radius: 20px; }
+  .assistant-drawer .assistant-body { padding: 16px; }
+  .assistant-message { max-width: 100%; }
 }
 /* ---- Guided tour ---- */
 .tour-btn { display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px; border: none; border-radius: 999px; background: #fff; color: var(--c-ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 1px 0 var(--c-line); }

@@ -66,3 +66,27 @@ won't show up in it until you rebuild (`npm run build`, then re-grab
 The Forecast page now uses `src/utils/forecast.js`. Every method predicts the **change** from the latest market price, using recent price changes at the market and at the farm. Training uses all earlier months and testing is walk-forward, so no future data is used. The app tests four methods (farm-link regression, ARIMA(2,1,0), boosted stumps, random forest) plus a "repeat last price" baseline, and uses the most accurate one for the chosen time ahead.
 
 To re-run the accuracy test: `npm install` then `node tools/validate-forecast.mjs`.
+
+## AI Forecast Companion
+
+The optional ManokMetrics AI Assistant appears on the Forecast page. It explains
+the current forecast, observed price trends, model metrics, and user-entered
+events without replacing the existing forecasting engine. Before the first
+request it asks for consent and sends only the question plus a compact summary
+of the selected product, geography, recent observations, forecast output, and
+relevant events. It does not send the full CSV or store conversations remotely.
+
+The development server exposes `/api/assistant` as an OpenAI-compatible
+server-side adapter. Configure these server environment variables before
+starting Vite:
+
+- `AI_API_URL` — provider chat-completions URL
+- `AI_API_KEY` — server-side provider key (never use a `VITE_` variable)
+- `AI_MODEL` — provider model name
+
+For example, set the variables in the terminal that launches `npm run dev`,
+then open the local URL. The adapter is intentionally disabled when any value
+is missing. A production deployment needs an equivalent server-side function
+for `/api/assistant` with the same environment variables; the standalone HTML
+build cannot securely provide private AI credentials and will leave the
+assistant unavailable unless it is hosted alongside that endpoint.
